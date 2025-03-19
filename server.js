@@ -22,139 +22,174 @@ app.get("/", (req, res) => {
 
 // Use API key from environment variable
 const API_KEY = process.env.GEMINI_API_KEY;
-const genAI = new GoogleGenerativeAI(API_KEY);
+
+// Check if API key is available
+if (!API_KEY) {
+  console.error("GEMINI_API_KEY is not set in environment variables");
+  console.error(
+    "Please set GEMINI_API_KEY in your Render environment variables"
+  );
+}
+
+// Initialize Gemini API with error handling
+let genAI;
+try {
+  genAI = new GoogleGenerativeAI(API_KEY);
+  console.log("Google Generative AI initialized successfully");
+} catch (error) {
+  console.error("Failed to initialize Google Generative AI:", error.message);
+}
 
 // Initialize SQLite database
 let db;
 (async () => {
-  db = await open({
-    filename: ":memory:", // In-memory database for demo purposes
-    driver: sqlite3.Database,
-  });
+  try {
+    console.log("Opening SQLite in-memory database...");
+    db = await open({
+      filename: ":memory:", // In-memory database for demo purposes
+      driver: sqlite3.Database,
+    });
+    console.log("SQLite database opened successfully");
 
-  // Create a sample database with test data
-  await db.exec(`
-    CREATE TABLE IF NOT EXISTS customers (
-      id INTEGER PRIMARY KEY,
-      name TEXT NOT NULL,
-      email TEXT UNIQUE,
-      total_spent REAL DEFAULT 0,
-      join_date TEXT
-    );
-    
-    CREATE TABLE IF NOT EXISTS orders (
-      id INTEGER PRIMARY KEY,
-      customer_id INTEGER,
-      order_date TEXT,
-      amount REAL,
-      FOREIGN KEY(customer_id) REFERENCES customers(id)
-    );
-    
-    INSERT OR IGNORE INTO customers (id, name, email, total_spent, join_date)
-    VALUES 
-      (1, 'John Doe', 'john@example.com', 1200.50, '2023-01-15'),
-      (2, 'Jane Smith', 'jane@example.com', 850.75, '2023-02-20'),
-      (3, 'Bob Johnson', 'bob@example.com', 2100.25, '2022-11-10'),
-      (4, 'Alice Brown', 'alice@example.com', 450.30, '2023-03-05'),
-      (5, 'Charlie Wilson', 'charlie@example.com', 1500.60, '2022-12-18');
+    console.log("Creating schema and sample data...");
+    // Create a sample database with test data
+    await db.exec(`
+      CREATE TABLE IF NOT EXISTS customers (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL,
+        email TEXT UNIQUE,
+        total_spent REAL DEFAULT 0,
+        join_date TEXT
+      );
       
-    INSERT OR IGNORE INTO orders (customer_id, order_date, amount)
-    VALUES
-      (1, '2023-03-10', 250.50),
-      (1, '2023-04-15', 350.75),
-      (2, '2023-03-20', 150.25),
-      (3, '2023-02-25', 800.30),
-      (3, '2023-03-15', 650.45),
-      (4, '2023-04-05', 200.10),
-      (5, '2023-03-30', 450.60),
-      (5, '2023-04-10', 350.25);
+      CREATE TABLE IF NOT EXISTS orders (
+        id INTEGER PRIMARY KEY,
+        customer_id INTEGER,
+        order_date TEXT,
+        amount REAL,
+        FOREIGN KEY(customer_id) REFERENCES customers(id)
+      );
       
-    -- Library database tables
-    CREATE TABLE IF NOT EXISTS Authors (
-      AuthorID INTEGER PRIMARY KEY AUTOINCREMENT,
-      FirstName TEXT NOT NULL,
-      LastName TEXT NOT NULL
-    );
+      INSERT OR IGNORE INTO customers (id, name, email, total_spent, join_date)
+      VALUES 
+        (1, 'John Doe', 'john@example.com', 1200.50, '2023-01-15'),
+        (2, 'Jane Smith', 'jane@example.com', 850.75, '2023-02-20'),
+        (3, 'Bob Johnson', 'bob@example.com', 2100.25, '2022-11-10'),
+        (4, 'Alice Brown', 'alice@example.com', 450.30, '2023-03-05'),
+        (5, 'Charlie Wilson', 'charlie@example.com', 1500.60, '2022-12-18');
+        
+      INSERT OR IGNORE INTO orders (customer_id, order_date, amount)
+      VALUES
+        (1, '2023-03-10', 250.50),
+        (1, '2023-04-15', 350.75),
+        (2, '2023-03-20', 150.25),
+        (3, '2023-02-25', 800.30),
+        (3, '2023-03-15', 650.45),
+        (4, '2023-04-05', 200.10),
+        (5, '2023-03-30', 450.60),
+        (5, '2023-04-10', 350.25);
+        
+      -- Library database tables
+      CREATE TABLE IF NOT EXISTS Authors (
+        AuthorID INTEGER PRIMARY KEY AUTOINCREMENT,
+        FirstName TEXT NOT NULL,
+        LastName TEXT NOT NULL
+      );
 
-    CREATE TABLE IF NOT EXISTS Genres (
-      GenreID INTEGER PRIMARY KEY AUTOINCREMENT,
-      GenreName TEXT NOT NULL UNIQUE
-    );
+      CREATE TABLE IF NOT EXISTS Genres (
+        GenreID INTEGER PRIMARY KEY AUTOINCREMENT,
+        GenreName TEXT NOT NULL UNIQUE
+      );
 
-    CREATE TABLE IF NOT EXISTS Publishers (
-      PublisherID INTEGER PRIMARY KEY AUTOINCREMENT,
-      PublisherName TEXT NOT NULL UNIQUE
-    );
+      CREATE TABLE IF NOT EXISTS Publishers (
+        PublisherID INTEGER PRIMARY KEY AUTOINCREMENT,
+        PublisherName TEXT NOT NULL UNIQUE
+      );
 
-    CREATE TABLE IF NOT EXISTS Books (
-      BookID INTEGER PRIMARY KEY AUTOINCREMENT,
-      Title TEXT NOT NULL,
-      AuthorID INTEGER NOT NULL,
-      GenreID INTEGER NOT NULL,
-      PublisherID INTEGER NOT NULL,
-      PublicationYear INTEGER,
-      ISBN TEXT UNIQUE,
-      FOREIGN KEY (AuthorID) REFERENCES Authors(AuthorID),
-      FOREIGN KEY (GenreID) REFERENCES Genres(GenreID),
-      FOREIGN KEY (PublisherID) REFERENCES Publishers(PublisherID)
-    );
+      CREATE TABLE IF NOT EXISTS Books (
+        BookID INTEGER PRIMARY KEY AUTOINCREMENT,
+        Title TEXT NOT NULL,
+        AuthorID INTEGER NOT NULL,
+        GenreID INTEGER NOT NULL,
+        PublisherID INTEGER NOT NULL,
+        PublicationYear INTEGER,
+        ISBN TEXT UNIQUE,
+        FOREIGN KEY (AuthorID) REFERENCES Authors(AuthorID),
+        FOREIGN KEY (GenreID) REFERENCES Genres(GenreID),
+        FOREIGN KEY (PublisherID) REFERENCES Publishers(PublisherID)
+      );
 
-    CREATE TABLE IF NOT EXISTS Patrons (
-      PatronID INTEGER PRIMARY KEY AUTOINCREMENT,
-      FirstName TEXT NOT NULL,
-      LastName TEXT NOT NULL,
-      Address TEXT,
-      PhoneNumber TEXT,
-      Email TEXT UNIQUE
-    );
+      CREATE TABLE IF NOT EXISTS Patrons (
+        PatronID INTEGER PRIMARY KEY AUTOINCREMENT,
+        FirstName TEXT NOT NULL,
+        LastName TEXT NOT NULL,
+        Address TEXT,
+        PhoneNumber TEXT,
+        Email TEXT UNIQUE
+      );
 
-    CREATE TABLE IF NOT EXISTS Loans (
-      LoanID INTEGER PRIMARY KEY AUTOINCREMENT,
-      BookID INTEGER NOT NULL,
-      PatronID INTEGER NOT NULL,
-      LoanDate DATE NOT NULL,
-      DueDate DATE NOT NULL,
-      ReturnDate DATE,
-      FOREIGN KEY (BookID) REFERENCES Books(BookID),
-      FOREIGN KEY (PatronID) REFERENCES Patrons(PatronID)
-    );
+      CREATE TABLE IF NOT EXISTS Loans (
+        LoanID INTEGER PRIMARY KEY AUTOINCREMENT,
+        BookID INTEGER NOT NULL,
+        PatronID INTEGER NOT NULL,
+        LoanDate DATE NOT NULL,
+        DueDate DATE NOT NULL,
+        ReturnDate DATE,
+        FOREIGN KEY (BookID) REFERENCES Books(BookID),
+        FOREIGN KEY (PatronID) REFERENCES Patrons(PatronID)
+      );
 
-    INSERT OR IGNORE INTO Authors (FirstName, LastName) VALUES
-      ('Jane', 'Austen'),
-      ('George', 'Orwell'),
-      ('J.R.R.', 'Tolkien');
+      INSERT OR IGNORE INTO Authors (FirstName, LastName) VALUES
+        ('Jane', 'Austen'),
+        ('George', 'Orwell'),
+        ('J.R.R.', 'Tolkien');
 
-    INSERT OR IGNORE INTO Genres (GenreName) VALUES
-      ('Fiction'),
-      ('Science Fiction'),
-      ('Fantasy');
+      INSERT OR IGNORE INTO Genres (GenreName) VALUES
+        ('Fiction'),
+        ('Science Fiction'),
+        ('Fantasy');
 
-    INSERT OR IGNORE INTO Publishers (PublisherName) VALUES
-      ('Penguin Classics'),
-      ('Houghton Mifflin Harcourt');
+      INSERT OR IGNORE INTO Publishers (PublisherName) VALUES
+        ('Penguin Classics'),
+        ('Houghton Mifflin Harcourt');
 
-    INSERT OR IGNORE INTO Books (Title, AuthorID, GenreID, PublisherID, PublicationYear, ISBN) VALUES
-      ('Pride and Prejudice', 1, 1, 1, 1813, '978-0141439518'),
-      ('Nineteen Eighty-Four', 2, 2, 1, 1949, '978-0451524935'),
-      ('The Hobbit', 3, 3, 2, 1937, '978-0547928227');
+      INSERT OR IGNORE INTO Books (Title, AuthorID, GenreID, PublisherID, PublicationYear, ISBN) VALUES
+        ('Pride and Prejudice', 1, 1, 1, 1813, '978-0141439518'),
+        ('Nineteen Eighty-Four', 2, 2, 1, 1949, '978-0451524935'),
+        ('The Hobbit', 3, 3, 2, 1937, '978-0547928227');
 
-    INSERT OR IGNORE INTO Patrons (FirstName, LastName, Address, PhoneNumber, Email) VALUES
-      ('John', 'Doe', '123 Main St', '555-1234', 'john.doe@example.com'),
-      ('Jane', 'Smith', '456 Oak Ave', '555-5678', 'jane.smith@example.com');
+      INSERT OR IGNORE INTO Patrons (FirstName, LastName, Address, PhoneNumber, Email) VALUES
+        ('John', 'Doe', '123 Main St', '555-1234', 'john.doe@example.com'),
+        ('Jane', 'Smith', '456 Oak Ave', '555-5678', 'jane.smith@example.com');
 
-    INSERT OR IGNORE INTO Loans (BookID, PatronID, LoanDate, DueDate, ReturnDate) VALUES
-      (1, 1, '2023-01-01', '2023-01-15', '2023-01-14'),
-      (2, 2, '2023-02-01', '2023-02-15', NULL);
-  `);
+      INSERT OR IGNORE INTO Loans (BookID, PatronID, LoanDate, DueDate, ReturnDate) VALUES
+        (1, 1, '2023-01-01', '2023-01-15', '2023-01-14'),
+        (2, 2, '2023-02-01', '2023-02-15', NULL);
+    `);
 
-  console.log("SQLite database initialized with sample data");
+    console.log("SQLite database initialized with sample data");
+  } catch (error) {
+    console.error("Error initializing SQLite database:", error);
+  }
 })();
 
 // Helper function to generate SQL query from natural language
 async function generateSQLQuery(prompt) {
   try {
+    if (!genAI) {
+      throw new Error("Google Generative AI client is not initialized");
+    }
+
+    if (!API_KEY) {
+      throw new Error("GEMINI_API_KEY environment variable is not set");
+    }
+
     // Get the generative model (Gemini)
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+    if (!model) {
+      throw new Error("Failed to get generative model");
+    }
 
     // Create a prompt for SQL query generation
     const fullPrompt = `
@@ -178,12 +213,18 @@ async function generateSQLQuery(prompt) {
     `;
 
     // Generate content
+    console.log("Sending request to Gemini API...");
     const result = await model.generateContent(fullPrompt);
+    if (!result || !result.response) {
+      throw new Error("No response from Gemini API");
+    }
+
     const response = await result.response;
+    console.log("Received response from Gemini API");
     return response.text();
   } catch (error) {
     console.error("Error generating SQL query:", error);
-    throw new Error("Failed to generate SQL query");
+    throw new Error(`Failed to generate SQL query: ${error.message}`);
   }
 }
 
@@ -279,8 +320,24 @@ app.post("/api/generate-sql", async (req, res) => {
       return res.status(400).json({ error: "Missing prompt in request body" });
     }
 
+    console.log(
+      `Received prompt: "${prompt.substring(0, 100)}${
+        prompt.length > 100 ? "..." : ""
+      }"`
+    );
+
+    if (!API_KEY) {
+      return res.status(500).json({
+        success: false,
+        error:
+          "GEMINI_API_KEY environment variable is not set. Please configure it in Render dashboard.",
+      });
+    }
+
     let sqlQuery = await generateSQLQuery(prompt);
     sqlQuery = cleanSQLQuery(sqlQuery);
+
+    console.log(`Generated SQL query: "${sqlQuery}"`);
 
     return res.status(200).json({
       success: true,
@@ -291,6 +348,7 @@ app.post("/api/generate-sql", async (req, res) => {
     return res.status(500).json({
       success: false,
       error: error.message || "Internal server error",
+      details: process.env.NODE_ENV === "production" ? null : error.stack,
     });
   }
 });
@@ -471,9 +529,73 @@ app.post("/api/delete-all-tables", async (req, res) => {
     });
   }
 });
-// Health check route
-app.get("/health", (req, res) => {
-  res.status(200).json({ status: "healthy" });
+
+// Health check route with diagnostics
+app.get("/health", async (req, res) => {
+  let databaseStatus = "unknown";
+  let geminiStatus = "unknown";
+
+  // Check database status
+  try {
+    if (db) {
+      const result = await db.get("SELECT 1 as test");
+      databaseStatus = result && result.test === 1 ? "connected" : "error";
+    } else {
+      databaseStatus = "not_initialized";
+    }
+  } catch (error) {
+    databaseStatus = "error";
+    console.error("Health check database error:", error);
+  }
+
+  // Check Gemini status
+  try {
+    if (genAI && API_KEY) {
+      geminiStatus = "initialized";
+    } else if (!API_KEY) {
+      geminiStatus = "missing_api_key";
+    } else {
+      geminiStatus = "initialization_failed";
+    }
+  } catch (error) {
+    geminiStatus = "error";
+    console.error("Health check Gemini error:", error);
+  }
+
+  res.status(200).json({
+    status: "healthy",
+    database: databaseStatus,
+    gemini: geminiStatus,
+    environment: process.env.NODE_ENV || "development",
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Debugging route (only available in non-production environments)
+app.get("/api/debug", (req, res) => {
+  if (process.env.NODE_ENV === "production") {
+    return res
+      .status(403)
+      .json({ error: "Debug endpoint not available in production" });
+  }
+
+  const debugInfo = {
+    environment: process.env.NODE_ENV || "development",
+    apiKey: API_KEY
+      ? "Configured (not showing for security)"
+      : "Not configured",
+    geminiInitialized: !!genAI,
+    databaseInitialized: !!db,
+    server: {
+      port: PORT,
+      platform: process.platform,
+      nodeVersion: process.version,
+      memoryUsage: process.memoryUsage(),
+    },
+    timestamp: new Date().toISOString(),
+  };
+
+  res.status(200).json(debugInfo);
 });
 
 // Start the server

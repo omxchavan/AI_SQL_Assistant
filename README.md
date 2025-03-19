@@ -38,6 +38,15 @@ This repository includes a `render.yaml` file that can be used with Render Bluep
    - GEMINI_API_KEY: Your Google Gemini API key
 6. Deploy the Blueprint
 
+### Troubleshooting Render Deployment
+
+If you encounter issues with your deployment:
+
+1. **Check Gemini API Key**: Ensure your `GEMINI_API_KEY` is correctly set in Render's environment variables
+2. **Check Application Logs**: In the Render dashboard, navigate to your service's logs to see any error messages
+3. **Health Endpoint**: Visit the `/health` endpoint of your deployed app to check system status
+4. **See Detailed Guide**: For more detailed troubleshooting steps, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+
 ## Local Development
 
 1. Clone the repository
@@ -56,6 +65,8 @@ This repository includes a `render.yaml` file that can be used with Render Bluep
 - `POST /api/execute-sql`: Execute SQL queries
 - `POST /api/generate-sql`: Generate SQL from natural language
 - `POST /api/delete-all-tables`: Delete all tables and reset the database
+- `GET /health`: Health check and diagnostic information
+- `GET /api/debug`: Debug information (non-production environments only)
 
 ## License
 
