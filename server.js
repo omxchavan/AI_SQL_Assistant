@@ -6,18 +6,12 @@ const cors = require("cors");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const sqlite3 = require("sqlite3");
 const { open } = require("sqlite");
-const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 app.use(cors());
-
-// Serve static HTML file
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
-});
 
 // Use API key from environment variable
 const API_KEY = process.env.GEMINI_API_KEY;
