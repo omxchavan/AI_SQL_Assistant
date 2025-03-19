@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gemini SQL Query Generator</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+      color: #333;
+      background-color: #f9f9f9;
+    }
+    
+    .container {
+      background-color: white;
+      border-radius: 8px;
+      padding: 30px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    h1 {
+      color: #2c3e50;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 16px;
+      margin-bottom: 20px;
+      resize: vertical;
+    }
+    
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      transition: background-color 0.3s;
+    }
+    
+    button:hover {
+      background-color: #2980b9;
+    }
+    
+    .result-container {
+      margin-top: 30px;
+      display: none;
+    }
+    
+    .result-header {
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #2c3e50;
+    }
+    
+    .sql-result {
+      background-color: #f8f9fa;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 15px;
+      font-family: 'Courier New', monospace;
+      white-space: pre-wrap;
+      overflow-x: auto;
+    }
+    
+    .copy-btn {
+      background-color: #27ae60;
+      padding: 8px 15px;
+      margin-top: 10px;
+      float: right;
+    }
+    
+    .copy-btn:hover {
+      background-color: #219653;
+    }
+    
+    .loading {
+      text-align: center;
+      display: none;
+      margin: 20px 0;
+    }
+    
+    .spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border-left-color: #3498db;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .error {
+      color: #e74c3c;
+      margin-top: 15px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Gemini SQL Query Generator</h1>
+    
+    <div>
+      <label for="prompt">Describe what SQL query you need in plain English:</label>
+      <textarea id="prompt" placeholder="Example: Show me all customers who purchased more than $1000 last month"></textarea>
+      <button id="generate-btn">Generate SQL Query</button>
+    </div>
+    
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Generating SQL query...</p>
+    </div>
+    
+    <div class="error" id="error-message"></div>
+    
+    <div class="result-container" id="result-container">
+      <div class="result-header">Generated SQL Query:</div>
+      <div class="sql-result" id="sql-result"></div>
+      <button class="copy-btn" id="copy-btn">Copy to Clipboard</button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const promptInput = document.getElementById('prompt');
+      const generateBtn = document.getElementById('generate-btn');
+      const resultContainer = document.getElementById('result-container');
+      const sqlResult = document.getElementById('sql-result');
+      const copyBtn = document.getElementById('copy-btn');
+      const loadingElement = document.querySelector('.loading');
+      const errorMessage = document.getElementById('error-message');
+
+      // API URL - Change this to match your backend server
+      const API_URL = 'http://localhost:3000/api/generate-sql';
+      
+      generateBtn.addEventListener('click', async () => {
+        const prompt = promptInput.value.trim();
+        
+        if (!prompt) {
+          showError('Please enter a prompt to generate a SQL query.');
+          return;
+        }
+        
+        // Show loading spinner and hide previous results/errors
+        loadingElement.style.display = 'block';
+        resultContainer.style.display = 'none';
+        errorMessage.style.display = 'none';
+        
+        try {
+          const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ prompt })
+          });
+          
+          const data = await response.json();
+          
+          if (!response.ok) {
+            throw new Error(data.error || 'Failed to generate SQL query');
+          }
+          
+          // Display the result
+          sqlResult.textContent = data.query;
+          resultContainer.style.display = 'block';
+          
+        } catch (error) {
+          showError(`Error: ${error.message}`);
+        } finally {
+          loadingElement.style.display = 'none';
+        }
+      });
+      
+      copyBtn.addEventListener('click', () => {
+        const queryText = sqlResult.textContent;
+        navigator.clipboard.writeText(queryText)
+          .then(() => {
+            // Temporarily change button text to indicate success
+            const originalText = copyBtn.textContent;
+            copyBtn.textContent = 'Copied!';
+            setTimeout(() => {
+              copyBtn.textContent = originalText;
+            }, 2000);
+          })
+          .catch(err => {
+            showError('Failed to copy text: ' + err);
+          });
+      });
+      
+      function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>
