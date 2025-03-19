@@ -4,6 +4,8 @@ const cors = require("cors");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const sqlite3 = require("sqlite3");
 const { open } = require("sqlite");
+const path = require("path");
+require("dotenv").config();
 
 // Initialize the Express application
 const app = express();
@@ -13,9 +15,14 @@ const PORT = process.env.PORT || 3000;
 app.use(bodyParser.json());
 app.use(cors()); // Enable CORS for all routes
 
+// Serve static files from the root directory
+app.use(express.static(path.join(__dirname)));
+
 // Initialize Gemini API
-// NOTE: Replace with your actual API key
-const API_KEY = "AIzaSyAvoQJrPm1VA2l9cPiOZ8ualCb_yYsAz84";
+const API_KEY = process.env.GEMINI_API_KEY;
+if (!API_KEY) {
+  console.error("GEMINI_API_KEY is not set in environment variables");
+}
 const genAI = new GoogleGenerativeAI(API_KEY);
 
 // Initialize SQLite database
@@ -49,428 +56,335 @@ let db;
       (1, 'John Doe', 'john@example.com', 1200.50, '2023-01-15'),
       (2, 'Jane Smith', 'jane@example.com', 850.75, '2023-02-20'),
       (3, 'Bob Johnson', 'bob@example.com', 2100.25, '2022-11-10'),
-      (4, 'Alice Brown', 'alice@example.com', 450.30, '2023-03-05'),
-      (5, 'Charlie Wilson', 'charlie@example.com', 1500.60, '2022-12-18');
-      
-    INSERT OR IGNORE INTO orders (customer_id, order_date, amount)
+      (4, 'Alice Brown', 'alice@example.com', 1500.00, '2023-03-05'),
+      (5, 'Charlie Davis', 'charlie@example.com', 3200.75, '2022-09-22');
+
+    INSERT OR IGNORE INTO orders (id, customer_id, order_date, amount)
     VALUES
-      (1, '2023-03-10', 250.50),
-      (1, '2023-04-15', 350.75),
-      (2, '2023-03-20', 150.25),
-      (3, '2023-02-25', 800.30),
-      (3, '2023-03-15', 650.45),
-      (4, '2023-04-05', 200.10),
-      (5, '2023-03-30', 450.60),
-      (5, '2023-04-10', 350.25);
-      
-    -- Library database tables
-    CREATE TABLE IF NOT EXISTS Authors (
-      AuthorID INTEGER PRIMARY KEY AUTOINCREMENT,
-      FirstName TEXT NOT NULL,
-      LastName TEXT NOT NULL
-    );
+      (1, 1, '2023-03-10', 250.50),
+      (2, 1, '2023-04-15', 125.25),
+      (3, 2, '2023-03-20', 450.00),
+      (4, 3, '2023-02-05', 780.50),
+      (5, 3, '2023-04-10', 320.75),
+      (6, 4, '2023-04-05', 600.25),
+      (7, 5, '2023-03-15', 1200.50),
+      (8, 5, '2023-04-20', 950.25);
 
-    CREATE TABLE IF NOT EXISTS Genres (
-      GenreID INTEGER PRIMARY KEY AUTOINCREMENT,
-      GenreName TEXT NOT NULL UNIQUE
-    );
-
-    CREATE TABLE IF NOT EXISTS Publishers (
-      PublisherID INTEGER PRIMARY KEY AUTOINCREMENT,
-      PublisherName TEXT NOT NULL UNIQUE
-    );
-
+    -- Create Books table
     CREATE TABLE IF NOT EXISTS Books (
-      BookID INTEGER PRIMARY KEY AUTOINCREMENT,
+      BookID INTEGER PRIMARY KEY,
       Title TEXT NOT NULL,
-      AuthorID INTEGER NOT NULL,
-      GenreID INTEGER NOT NULL,
-      PublisherID INTEGER NOT NULL,
-      PublicationYear INTEGER,
+      AuthorID INTEGER,
       ISBN TEXT UNIQUE,
-      FOREIGN KEY (AuthorID) REFERENCES Authors(AuthorID),
-      FOREIGN KEY (GenreID) REFERENCES Genres(GenreID),
-      FOREIGN KEY (PublisherID) REFERENCES Publishers(PublisherID)
+      PublishedYear INTEGER,
+      GenreID INTEGER,
+      Price REAL,
+      Description TEXT,
+      FOREIGN KEY(AuthorID) REFERENCES Authors(AuthorID),
+      FOREIGN KEY(GenreID) REFERENCES Genres(GenreID)
     );
 
-    CREATE TABLE IF NOT EXISTS Patrons (
-      PatronID INTEGER PRIMARY KEY AUTOINCREMENT,
+    -- Create Authors table
+    CREATE TABLE IF NOT EXISTS Authors (
+      AuthorID INTEGER PRIMARY KEY,
       FirstName TEXT NOT NULL,
       LastName TEXT NOT NULL,
-      Address TEXT,
+      BirthYear INTEGER,
+      CountryOfOrigin TEXT
+    );
+
+    -- Create Genres table
+    CREATE TABLE IF NOT EXISTS Genres (
+      GenreID INTEGER PRIMARY KEY,
+      GenreName TEXT NOT NULL,
+      Description TEXT
+    );
+
+    -- Create Patrons table
+    CREATE TABLE IF NOT EXISTS Patrons (
+      PatronID INTEGER PRIMARY KEY,
+      FirstName TEXT NOT NULL,
+      LastName TEXT NOT NULL,
+      Email TEXT UNIQUE,
       PhoneNumber TEXT,
-      Email TEXT UNIQUE
+      Address TEXT,
+      MembershipDate TEXT
     );
 
+    -- Create Loans table
     CREATE TABLE IF NOT EXISTS Loans (
-      LoanID INTEGER PRIMARY KEY AUTOINCREMENT,
-      BookID INTEGER NOT NULL,
-      PatronID INTEGER NOT NULL,
-      LoanDate DATE NOT NULL,
-      DueDate DATE NOT NULL,
-      ReturnDate DATE,
-      FOREIGN KEY (BookID) REFERENCES Books(BookID),
-      FOREIGN KEY (PatronID) REFERENCES Patrons(PatronID)
+      LoanID INTEGER PRIMARY KEY,
+      PatronID INTEGER,
+      BookID INTEGER,
+      LoanDate TEXT NOT NULL,
+      DueDate TEXT NOT NULL,
+      ReturnDate TEXT,
+      FOREIGN KEY(PatronID) REFERENCES Patrons(PatronID),
+      FOREIGN KEY(BookID) REFERENCES Books(BookID)
     );
 
-    INSERT OR IGNORE INTO Authors (FirstName, LastName) VALUES
-      ('Jane', 'Austen'),
-      ('George', 'Orwell'),
-      ('J.R.R.', 'Tolkien');
+    -- Insert sample data for Authors
+    INSERT OR IGNORE INTO Authors (AuthorID, FirstName, LastName, BirthYear, CountryOfOrigin)
+    VALUES
+      (1, 'J.K.', 'Rowling', 1965, 'United Kingdom'),
+      (2, 'George', 'Orwell', 1903, 'United Kingdom'),
+      (3, 'Jane', 'Austen', 1775, 'United Kingdom'),
+      (4, 'F. Scott', 'Fitzgerald', 1896, 'United States'),
+      (5, 'Harper', 'Lee', 1926, 'United States');
 
-    INSERT OR IGNORE INTO Genres (GenreName) VALUES
-      ('Fiction'),
-      ('Science Fiction'),
-      ('Fantasy');
+    -- Insert sample data for Genres
+    INSERT OR IGNORE INTO Genres (GenreID, GenreName, Description)
+    VALUES
+      (1, 'Fantasy', 'Fiction with supernatural elements'),
+      (2, 'Dystopian', 'Fiction set in a repressive society'),
+      (3, 'Classic', 'Works of enduring excellence'),
+      (4, 'Romance', 'Stories about love relationships'),
+      (5, 'Historical Fiction', 'Fiction set in the past');
 
-    INSERT OR IGNORE INTO Publishers (PublisherName) VALUES
-      ('Penguin Classics'),
-      ('Houghton Mifflin Harcourt');
+    -- Insert sample data for Books
+    INSERT OR IGNORE INTO Books (BookID, Title, AuthorID, ISBN, PublishedYear, GenreID, Price, Description)
+    VALUES
+      (1, 'Harry Potter and the Philosopher''s Stone', 1, '9780747532743', 1997, 1, 15.99, 'The first book in the Harry Potter series'),
+      (2, '1984', 2, '9780451524935', 1949, 2, 12.50, 'A dystopian novel about totalitarianism'),
+      (3, 'Pride and Prejudice', 3, '9780141439518', 1813, 4, 9.99, 'A romantic novel of manners'),
+      (4, 'The Great Gatsby', 4, '9780743273565', 1925, 3, 14.25, 'A novel about the American Dream'),
+      (5, 'To Kill a Mockingbird', 5, '9780061120084', 1960, 3, 11.99, 'A novel about racial injustice');
 
-    INSERT OR IGNORE INTO Books (Title, AuthorID, GenreID, PublisherID, PublicationYear, ISBN) VALUES
-      ('Pride and Prejudice', 1, 1, 1, 1813, '978-0141439518'),
-      ('Nineteen Eighty-Four', 2, 2, 1, 1949, '978-0451524935'),
-      ('The Hobbit', 3, 3, 2, 1937, '978-0547928227');
+    -- Insert sample data for Patrons
+    INSERT OR IGNORE INTO Patrons (PatronID, FirstName, LastName, Email, PhoneNumber, Address, MembershipDate)
+    VALUES
+      (1, 'Emma', 'Johnson', 'emma@example.com', '555-1234', '123 Main St', '2022-01-15'),
+      (2, 'Michael', 'Smith', 'michael@example.com', '555-5678', '456 Elm St', '2022-02-20'),
+      (3, 'Sophia', 'Williams', 'sophia@example.com', '555-9012', '789 Oak St', '2022-03-25'),
+      (4, 'William', 'Brown', 'william@example.com', '555-3456', '101 Pine St', '2022-04-10'),
+      (5, 'Olivia', 'Jones', 'olivia@example.com', '555-7890', '202 Maple St', '2022-05-05');
 
-    INSERT OR IGNORE INTO Patrons (FirstName, LastName, Address, PhoneNumber, Email) VALUES
-      ('John', 'Doe', '123 Main St', '555-1234', 'john.doe@example.com'),
-      ('Jane', 'Smith', '456 Oak Ave', '555-5678', 'jane.smith@example.com');
-
-    INSERT OR IGNORE INTO Loans (BookID, PatronID, LoanDate, DueDate, ReturnDate) VALUES
-      (1, 1, '2023-01-01', '2023-01-15', '2023-01-14'),
-      (2, 2, '2023-02-01', '2023-02-15', NULL);
+    -- Insert sample data for Loans
+    INSERT OR IGNORE INTO Loans (LoanID, PatronID, BookID, LoanDate, DueDate, ReturnDate)
+    VALUES
+      (1, 1, 1, '2023-01-10', '2023-01-24', '2023-01-22'),
+      (2, 2, 3, '2023-01-15', '2023-01-29', '2023-01-28'),
+      (3, 3, 5, '2023-02-05', '2023-02-19', NULL),
+      (4, 4, 2, '2023-02-10', '2023-02-24', '2023-02-20'),
+      (5, 5, 4, '2023-02-15', '2023-03-01', NULL),
+      (6, 1, 3, '2023-03-01', '2023-03-15', '2023-03-10'),
+      (7, 2, 5, '2023-03-05', '2023-03-19', NULL),
+      (8, 3, 1, '2023-03-10', '2023-03-24', NULL);
   `);
 
-  console.log("SQLite database initialized with sample data");
+  console.log("Sample database created successfully");
 })();
 
-// Helper function to generate SQL query from natural language
-async function generateSQLQuery(prompt) {
-  try {
-    // Get the generative model (Gemini)
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-
-    // Create a prompt for SQL query generation
-    const fullPrompt = `
-      You are a SQLITE expert. Convert the following natural language request into a valid SQLITE query.
-      Only return the SQLITE query without any additional explanation or markdown.
-
-      Do not include backticks, SQLITE comments, or markdown formatting.
-      
-      The database has the following schema:
-      
-      - Authors (AuthorID, FirstName, LastName)
-      - Genres (GenreID, GenreName)
-      - Publishers (PublisherID, PublisherName)
-      - Books (BookID, Title, AuthorID, GenreID, PublisherID, PublicationYear, ISBN)
-      - Patrons (PatronID, FirstName, LastName, Address, PhoneNumber, Email)
-      - Loans (LoanID, BookID, PatronID, LoanDate, DueDate, ReturnDate)
-      
-      There's also a customers and orders table, but focus on the tables above for library-related queries.
-      
-      Request: ${prompt}
-    `;
-
-    // Generate content
-    const result = await model.generateContent(fullPrompt);
-    const response = await result.response;
-    return response.text();
-  } catch (error) {
-    console.error("Error generating SQL query:", error);
-    throw new Error("Failed to generate SQL query");
-  }
-}
-
-// Helper function to clean SQL query from markdown or comments
-function cleanSQLQuery(query) {
-  // Remove markdown SQL backticks if present
-  let cleaned = query.replace(/```sql\s*|```\s*$/g, "");
-
-  // Remove SQL comments
-  cleaned = cleaned.replace(/--.*$/gm, "");
-
-  // Trim whitespace
-  cleaned = cleaned.trim();
-
-  return cleaned;
-}
-
-// Helper function to format SQL results as a table
-function formatResultsAsTable(results) {
-  if (!results || results.length === 0) {
-    return {
-      raw: [],
-      formatted: "No results returned.",
-      columnInfo: {
-        names: [],
-        widths: {},
-      },
-    };
-  }
-
-  // Get column names from the first result
-  const columns = Object.keys(results[0]);
-
-  // Calculate column widths (accounting for headers and values)
-  const columnWidths = {};
-  columns.forEach((col) => {
-    // Start with the header length
-    columnWidths[col] = col.length;
-
-    // Check each row's value length
-    results.forEach((row) => {
-      const valueStr = row[col] !== null ? String(row[col]) : "NULL";
-      columnWidths[col] = Math.max(columnWidths[col], valueStr.length);
-    });
-  });
-
-  // Create header row
-  let tableOutput = "";
-  let headerRow = "| ";
-  let separator = "+-";
-
-  columns.forEach((col) => {
-    headerRow += col.padEnd(columnWidths[col]) + " | ";
-    separator += "-".repeat(columnWidths[col]) + "-+-";
-  });
-
-  // Remove the trailing '+-' and add a '+' at the end
-  separator = separator.slice(0, -2) + "+";
-
-  // Build the table
-  tableOutput += separator + "\n";
-  tableOutput += headerRow + "\n";
-  tableOutput += separator + "\n";
-
-  // Add data rows
-  results.forEach((row) => {
-    let dataRow = "| ";
-    columns.forEach((col) => {
-      const value = row[col] !== null ? String(row[col]) : "NULL";
-      dataRow += value.padEnd(columnWidths[col]) + " | ";
-    });
-    tableOutput += dataRow + "\n";
-  });
-
-  tableOutput += separator;
-
-  return {
-    raw: results,
-    formatted: tableOutput,
-    columnInfo: {
-      names: columns,
-      widths: columnWidths,
-    },
-  };
-}
-
-// Route to handle SQL query generation
-app.post("/api/generate-sql", async (req, res) => {
-  try {
-    const { prompt } = req.body;
-
-    if (!prompt) {
-      return res.status(400).json({ error: "Missing prompt in request body" });
-    }
-
-    let sqlQuery = await generateSQLQuery(prompt);
-    sqlQuery = cleanSQLQuery(sqlQuery);
-
-    return res.status(200).json({
-      success: true,
-      query: sqlQuery,
-    });
-  } catch (error) {
-    console.error("Error in /api/generate-sql route:", error);
-    return res.status(500).json({
-      success: false,
-      error: error.message || "Internal server error",
-    });
-  }
+// Route to serve the main HTML page
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
 });
 
-// Route to execute SQL queries
+// API route to execute SQL queries
 app.post("/api/execute-sql", async (req, res) => {
+  const { query } = req.body;
+
+  if (!query) {
+    return res.status(400).json({ success: false, error: "No query provided" });
+  }
+
   try {
-    const { query } = req.body;
-
-    if (!query) {
-      return res.status(400).json({ error: "Missing query in request body" });
-    }
-
-    // Clean the SQL query
-    const cleanedQuery = cleanSQLQuery(query);
-
-    // Prevent destructive SQL operations in this demo
-    const lowerQuery = cleanedQuery.toLowerCase();
-    if (
-      lowerQuery.includes("drop table") ||
-      lowerQuery.includes("delete from") ||
-      lowerQuery.includes("truncate") ||
-      lowerQuery.includes("alter table")
-    ) {
-      return res.status(403).json({
-        error: "Destructive operations not allowed in this demo",
-      });
-    }
-
-    // Check if multiple statements are present (separated by semicolons)
-    const statements = cleanedQuery
+    // Check if this is a multi-statement query
+    const statements = query
       .split(";")
-      .filter((stmt) => stmt.trim() !== "");
+      .map((stmt) => stmt.trim())
+      .filter((stmt) => stmt.length > 0);
 
     if (statements.length > 1) {
       // Handle multiple statements
-      let allResults = [];
-      let combinedMessage = "";
-
+      const results = [];
       for (const statement of statements) {
-        if (!statement.trim()) continue;
-
-        // Execute each statement
-        const firstWord = statement.trim().toLowerCase().split(/\s+/)[0];
-        let result;
-
-        if (firstWord === "select") {
-          result = await db.all(statement);
-          combinedMessage += `SELECT query executed successfully. ${result.length} row(s) returned. `;
-
-          if (result.length > 0) {
-            allResults.push({
-              query: statement.trim(),
-              results: result,
-              formattedTable: formatResultsAsTable(result).formatted,
+        try {
+          // Skip DROP TABLE statements for security
+          if (statement.toLowerCase().includes("drop table")) {
+            results.push({
+              query: statement,
+              error: "DROP TABLE statements are not allowed",
             });
+            continue;
           }
-        } else if (["insert", "update", "delete"].includes(firstWord)) {
-          const execResult = await db.run(statement);
-          combinedMessage += `${firstWord.toUpperCase()} statement executed successfully. ${
-            execResult.changes
-          } row(s) affected. `;
-        } else if (["create", "drop", "alter", "pragma"].includes(firstWord)) {
-          await db.exec(statement);
-          combinedMessage += `${firstWord.toUpperCase()} statement executed successfully. `;
-        } else {
-          await db.exec(statement);
-          combinedMessage += `Statement executed successfully. `;
+
+          const stmtResult = await db.all(`${statement};`);
+          results.push({
+            query: statement,
+            results: stmtResult,
+          });
+        } catch (err) {
+          results.push({
+            query: statement,
+            error: err.message,
+          });
         }
       }
 
-      return res.status(200).json({
+      return res.json({
         success: true,
-        query: cleanedQuery,
+        message: "Multiple statements executed",
         isMultiStatement: true,
-        results: allResults,
-        message: combinedMessage.trim(),
+        results,
       });
     } else {
-      // Execute a single statement (existing logic)
-      let results;
-      let message = "";
+      // Handle single statement
+      const singleQuery = statements[0];
 
-      // Determine the type of SQL statement
-      const firstWord = lowerQuery.trim().split(/\s+/)[0];
-
-      if (firstWord === "select") {
-        // For SELECT queries
-        results = await db.all(cleanedQuery);
-        message =
-          results.length === 0
-            ? "Query executed successfully. No rows returned."
-            : `Query executed successfully. ${results.length} row(s) returned.`;
-      } else if (["insert", "update", "delete"].includes(firstWord)) {
-        // For DML statements
-        const result = await db.run(cleanedQuery);
-        message = `Query executed successfully. ${result.changes} row(s) affected.`;
-        results = [
-          { operation: firstWord.toUpperCase(), rowsAffected: result.changes },
-        ];
-      } else if (["create", "drop", "alter", "pragma"].includes(firstWord)) {
-        // For DDL statements
-        await db.exec(cleanedQuery);
-        message = `${firstWord.toUpperCase()} statement executed successfully.`;
-        results = [{ operation: firstWord.toUpperCase(), result: "Success" }];
-      } else {
-        // For other statements
-        await db.exec(cleanedQuery);
-        message = "Query executed successfully.";
-        results = [{ result: "Success" }];
+      // Skip DROP TABLE statements for security
+      if (singleQuery.toLowerCase().includes("drop table")) {
+        return res.status(400).json({
+          success: false,
+          error: "DROP TABLE statements are not allowed",
+        });
       }
 
-      // Format the results as a table
-      const formattedResults = formatResultsAsTable(results);
-
-      return res.status(200).json({
+      const results = await db.all(singleQuery);
+      return res.json({
         success: true,
-        query: cleanedQuery,
-        results: formattedResults.raw,
-        formattedTable: formattedResults.formatted,
-        message: message,
-        columns: formattedResults.columnInfo,
+        message: "Query executed successfully",
+        results,
       });
     }
   } catch (error) {
-    console.error("Error executing SQL query:", error);
+    return res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+// API route to generate SQL from natural language
+app.post("/api/generate-sql", async (req, res) => {
+  const { prompt } = req.body;
+
+  if (!prompt) {
+    return res
+      .status(400)
+      .json({ success: false, error: "No prompt provided" });
+  }
+
+  try {
+    const sqlQuery = await generateSQLQuery(prompt);
+    return res.json({ success: true, query: cleanSQLQuery(sqlQuery) });
+  } catch (error) {
+    console.error("Error generating SQL:", error);
     return res.status(500).json({
       success: false,
-      error: error.message || "Error executing SQL query",
+      error: "Failed to generate SQL. Please try again.",
     });
   }
 });
 
-// Simple route to delete all tables without re-creating them
+// API route to delete all tables
 app.post("/api/delete-all-tables", async (req, res) => {
+  const { confirmation } = req.body;
+
+  if (confirmation !== "CONFIRM_DELETE") {
+    return res.status(400).json({
+      success: false,
+      error: "Invalid confirmation. Tables not deleted.",
+    });
+  }
+
   try {
-    const { confirmation } = req.body;
-
-    if (confirmation !== "CONFIRM_DELETE") {
-      return res.status(400).json({
-        success: false,
-        error:
-          "Confirmation required. Please provide 'CONFIRM_DELETE' in the confirmation field.",
-      });
-    }
-
+    // Get all table names
     const tables = await db.all(
       "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';"
     );
 
-    // Begin a transaction
-    await db.exec("BEGIN TRANSACTION;");
-
-    try {
-      // Drop each table
-      for (const table of tables) {
-        await db.exec(`DROP TABLE IF EXISTS ${table.name};`);
-      }
-
-      // Commit changes
-      await db.exec("COMMIT;");
-
-      return res.status(200).json({
+    if (tables.length === 0) {
+      return res.json({
         success: true,
-        message: `All tables deleted successfully. ${tables.length} tables dropped.`,
-        tablesDropped: tables.map((t) => t.name),
+        message: "No tables to delete.",
       });
-    } catch (error) {
-      // Rollback if anything goes wrong
-      await db.exec("ROLLBACK;");
-      throw error;
     }
+
+    // Drop each table
+    for (const { name } of tables) {
+      await db.exec(`DROP TABLE IF EXISTS ${name};`);
+    }
+
+    // Recreate the database schema
+    await db.exec(`
+      CREATE TABLE IF NOT EXISTS customers (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL,
+        email TEXT UNIQUE,
+        total_spent REAL DEFAULT 0,
+        join_date TEXT
+      );
+      
+      CREATE TABLE IF NOT EXISTS orders (
+        id INTEGER PRIMARY KEY,
+        customer_id INTEGER,
+        order_date TEXT,
+        amount REAL,
+        FOREIGN KEY(customer_id) REFERENCES customers(id)
+      );
+    `);
+
+    return res.json({
+      success: true,
+      message: `All tables deleted successfully. Database reset to initial state.`,
+    });
   } catch (error) {
-    console.error("Error deleting tables:", error);
     return res.status(500).json({
       success: false,
-      error: error.message || "Error deleting tables",
+      error: `Error deleting tables: ${error.message}`,
     });
   }
 });
-// Health check route
-app.get("/health", (req, res) => {
-  res.status(200).json({ status: "healthy" });
-});
+
+// Helper function to generate SQL queries using Gemini
+async function generateSQLQuery(prompt) {
+  try {
+    // Create context with database schema
+    const schema = `
+    Tables:
+    - Customers: id (PK), name, email, total_spent, join_date
+    - Orders: id (PK), customer_id (FK), order_date, amount
+    - Books: BookID (PK), Title, AuthorID (FK), ISBN, PublishedYear, GenreID (FK), Price, Description
+    - Authors: AuthorID (PK), FirstName, LastName, BirthYear, CountryOfOrigin
+    - Genres: GenreID (PK), GenreName, Description
+    - Patrons: PatronID (PK), FirstName, LastName, Email, PhoneNumber, Address, MembershipDate
+    - Loans: LoanID (PK), PatronID (FK), BookID (FK), LoanDate, DueDate, ReturnDate
+    `;
+
+    const fullPrompt = `Given this database schema:
+    ${schema}
+    
+    Generate a valid SQL query for this request: "${prompt}"
+    
+    Return only the SQL query with no explanations or additional text.`;
+
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const result = await model.generateContent(fullPrompt);
+    const text = result.response.text();
+
+    return text;
+  } catch (error) {
+    console.error("Error generating SQL with Gemini:", error);
+    throw new Error("Failed to generate SQL query");
+  }
+}
+
+// Helper to clean the SQL query from Gemini's response
+function cleanSQLQuery(query) {
+  // Remove markdown code blocks if present
+  let cleanedQuery = query
+    .replace(/```sql/gi, "")
+    .replace(/```/g, "")
+    .trim();
+
+  // Remove any potential "SQL Query:" or similar prefixes
+  cleanedQuery = cleanedQuery.replace(/^(SQL query:|Query:|SQL:)\s*/i, "");
+
+  return cleanedQuery;
+}
 
 // Start the server
 app.listen(PORT, () => {
-  console.log(`Backend server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
+
+// For Vercel serverless functions
+module.exports = app;
