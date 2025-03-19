@@ -4,7 +4,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-const sqlite3 = require("sqlite3");
+const Database = require("better-sqlite3");
 const { open } = require("sqlite");
 const path = require("path");
 
@@ -47,7 +47,7 @@ let db;
     console.log("Opening SQLite in-memory database...");
     db = await open({
       filename: ":memory:", // In-memory database for demo purposes
-      driver: sqlite3.Database,
+      driver: Database,
     });
     console.log("SQLite database opened successfully");
 
