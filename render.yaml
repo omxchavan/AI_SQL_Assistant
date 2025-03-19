@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: sql-gemini-app
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: PORT
+        value: 3000

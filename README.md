@@ -1,107 +1,55 @@
-# SQL Generator App
+# SQL Query Generator with Gemini API
 
-A web application that allows users to generate SQL queries from natural language using the Gemini API.
-
-## Setup
-
-1. Clone the repository
-2. Install dependencies:
-   ```
-   npm install
-   ```
-3. Create a `.env` file in the root directory with your Gemini API key:
-   ```
-   GEMINI_API_KEY=your_api_key_here
-   ```
-4. Start the server:
-   ```
-   npm start
-   ```
-5. Open your browser to `http://localhost:3000`
+A web application that generates SQL queries from natural language using the Google Gemini API. The app provides an interface to write natural language prompts, generate SQL, and execute queries against a SQLite database.
 
 ## Features
 
-- Natural language to SQL conversion
-- SQL query execution
-- Sample database with multiple tables
-- Database management
+- Convert natural language to SQL using Google's Gemini API
+- Execute SQL queries against a SQLite in-memory database
+- View formatted results in a table
+- Sample database with tables for a library management system
 
-## Tech Stack
+## Deployment on Render
 
-- **Frontend**: HTML, CSS, JavaScript
-- **Backend**: Node.js, Express
-- **Database**: SQLite (in-memory)
-- **AI Integration**: Google Gemini AI
-- **Syntax Highlighting**: highlight.js
+### Option 1: Deploy with Render Dashboard
 
-## Deployment on Vercel
+1. Fork or clone this repository to your GitHub account
+2. Go to [Render](https://render.com/) and sign up or log in
+3. Click on "New +" and select "Web Service"
+4. Connect your GitHub repository
+5. Configure the service:
+   - Name: `sql-gemini-app` (or your preferred name)
+   - Environment: `Node`
+   - Build Command: `npm install`
+   - Start Command: `npm start`
+6. Add the environment variable:
+   - GEMINI_API_KEY: Your Google Gemini API key
+7. Click "Create Web Service"
 
-### Prerequisites
+### Option 2: Deploy with Render Blueprint
 
-- A Vercel account
-- Node.js installed locally
-- Git installed on your machine
+This repository includes a `render.yaml` file that can be used with Render Blueprints:
 
-### Steps to Deploy
-
-1. **Clone the repository**
-
-   ```bash
-   git clone <your-repo-url>
-   cd sql-query-tester
-   ```
-
-2. **Install Vercel CLI**
-
-   ```bash
-   npm install -g vercel
-   ```
-
-3. **Log in to Vercel**
-
-   ```bash
-   vercel login
-   ```
-
-4. **Deploy to Vercel**
-
-   ```bash
-   vercel
-   ```
-
-5. **Set up environment variables**
-
-   Create a `.env` file locally for development:
-
-   ```
-   GEMINI_API_KEY=your_gemini_api_key
-   ```
-
-   Add the same environment variables in the Vercel dashboard under your project settings.
-
-6. **Configure project settings**
-
-   - In the Vercel dashboard, go to your project
-   - Navigate to "Settings" → "Environment Variables"
-   - Add the `GEMINI_API_KEY` variable
+1. Fork or clone this repository to your GitHub account
+2. Go to [Render](https://render.com/) and sign up or log in
+3. Create a new Blueprint
+4. Connect your GitHub repository
+5. Configure the environment variables:
+   - GEMINI_API_KEY: Your Google Gemini API key
+6. Deploy the Blueprint
 
 ## Local Development
 
-1. **Install dependencies**
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Create a `.env` file with your GEMINI_API_KEY
+4. Run the server: `npm run dev`
+5. Open http://localhost:3000 in your browser
 
-   ```bash
-   npm install
-   ```
+## Environment Variables
 
-2. **Start the development server**
-
-   ```bash
-   npm run dev
-   ```
-
-3. **Access the application**
-
-   Open your browser and navigate to `http://localhost:3000`
+- `GEMINI_API_KEY`: Your Google Gemini API key
+- `PORT`: Port to run the server on (defaults to 3000)
 
 ## API Endpoints
 
