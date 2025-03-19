@@ -9,7 +9,6 @@ require("dotenv").config();
 
 // Initialize the Express application
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(bodyParser.json());
@@ -25,16 +24,15 @@ if (!API_KEY) {
 }
 const genAI = new GoogleGenerativeAI(API_KEY);
 
-// Initialize SQLite database
-let db;
-(async () => {
-  db = await open({
-    filename: ":memory:", // In-memory database for demo purposes
+// Initialize SQLite database - function to be called in each route handler
+async function initializeDatabase() {
+  const database = await open({
+    filename: ":memory:", // In-memory database for serverless environment
     driver: sqlite3.Database,
   });
 
   // Create a sample database with test data
-  await db.exec(`
+  await database.exec(`
     CREATE TABLE IF NOT EXISTS customers (
       id INTEGER PRIMARY KEY,
       name TEXT NOT NULL,
@@ -172,8 +170,8 @@ let db;
       (8, 3, 1, '2023-03-10', '2023-03-24', NULL);
   `);
 
-  console.log("Sample database created successfully");
-})();
+  return database;
+}
 
 // Route to serve the main HTML page
 app.get("/", (req, res) => {
@@ -189,6 +187,9 @@ app.post("/api/execute-sql", async (req, res) => {
   }
 
   try {
+    // Initialize database for this request
+    const db = await initializeDatabase();
+    
     // Check if this is a multi-statement query
     const statements = query
       .split(";")
@@ -286,6 +287,9 @@ app.post("/api/delete-all-tables", async (req, res) => {
   }
 
   try {
+    // Initialize database for this request
+    const db = await initializeDatabase();
+    
     // Get all table names
     const tables = await db.all(
       "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';"
@@ -381,10 +385,13 @@ function cleanSQLQuery(query) {
   return cleanedQuery;
 }
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// For local development only
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
 
 // For Vercel serverless functions
 module.exports = app;
