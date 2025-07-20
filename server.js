@@ -154,18 +154,7 @@ async function generateSQLQuery(prompt) {
       You are a SQLITE expert. Convert the following natural language request into a valid SQLITE query.
       Only return the SQLITE query without any additional explanation or markdown.
 
-      Do not include backticks, SQLITE comments, or markdown formatting.
-      
-      The database has the following schema:
-      
-      - Authors (AuthorID, FirstName, LastName)
-      - Genres (GenreID, GenreName)
-      - Publishers (PublisherID, PublisherName)
-      - Books (BookID, Title, AuthorID, GenreID, PublisherID, PublicationYear, ISBN)
-      - Patrons (PatronID, FirstName, LastName, Address, PhoneNumber, Email)
-      - Loans (LoanID, BookID, PatronID, LoanDate, DueDate, ReturnDate)
-      
-      There's also a customers and orders table, but focus on the tables above for library-related queries.
+      Do not include backticks, SQLITE comments, or markdown formatting
       
       Request: ${prompt}
     `;
