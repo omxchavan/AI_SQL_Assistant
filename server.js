@@ -8,7 +8,7 @@ const sqlite3 = require("sqlite3");
 const { open } = require("sqlite");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 
 app.use(bodyParser.json());
 app.use(cors());
@@ -459,6 +459,8 @@ app.get("/health", (req, res) => {
 });
 
 // Start the server
-app.listen(PORT, () => {
+ PORT = process.env.PORT || 10000;
+
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`Backend server running on port ${PORT}`);
 });
