@@ -9,6 +9,8 @@ const { open } = require("sqlite");
 
 const app = express();
 const PORT = process.env.PORT || 10000;
+app.set("view engine", "ejs");
+app.set("views", "./views");
 
 app.use(bodyParser.json());
 app.use(cors());
@@ -252,6 +254,10 @@ function formatResultsAsTable(results) {
   };
 }
 
+app.get("/", (req, res) => {
+  res.render("index.html");
+});
+
 // Route to handle SQL query generation
 app.post("/api/generate-sql", async (req, res) => {
   try {
@@ -459,7 +465,7 @@ app.get("/health", (req, res) => {
 });
 
 // Start the server
- PORT = process.env.PORT || 10000;
+PORT = process.env.PORT || 10000;
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Backend server running on port ${PORT}`);
