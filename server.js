@@ -465,8 +465,6 @@ app.get("/health", (req, res) => {
 });
 
 // Start the server
-PORT = process.env.PORT || 10000;
-
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Backend server running on port ${PORT}`);
 });
