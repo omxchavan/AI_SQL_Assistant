@@ -255,7 +255,7 @@ function formatResultsAsTable(results) {
 }
 
 app.get("/", (req, res) => {
-  res.render("index.html");
+  res.render("index");
 });
 
 // Route to handle SQL query generation
