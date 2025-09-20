@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SQL Query Tester</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/sql.min.js"></script>
+    <style>
+      :root {
+        --bg-color: #121212;
+        --card-bg: #1e1e1e;
+        --primary-color: #00ffea;
+        --secondary-color: #a64dff;
+        --danger-color: #ff3a5e;
+        --text-color: #e0e0e0;
+        --muted-text: #a0a0a0;
+        --border-color: #333;
+        --hover-color: #252525;
+      }
+
+      .admin-controls {
+        margin-top: 30px;
+        padding: 20px;
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      }
+
+      .danger-btn {
+        background-color: var(--danger-color);
+        color: white;
+      }
+
+      .danger-btn:hover {
+        background-color: #e6244a;
+        box-shadow: 0 0 10px var(--danger-color);
+      }
+
+      body {
+        font-family: "SF Pro Display", "Segoe UI", Arial, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        line-height: 1.6;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+      }
+
+      h1,
+      h2,
+      h3 {
+        color: var(--primary-color);
+        letter-spacing: 0.5px;
+        text-shadow: 0 0 5px rgba(0, 255, 234, 0.3);
+      }
+
+      .container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        margin-top: 20px;
+      }
+
+      textarea {
+        width: 100%;
+        height: 150px;
+        padding: 15px;
+        font-family: "Fira Code", "Consolas", monospace;
+        font-size: 14px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background-color: #0f1419;
+        color: var(--text-color);
+        resize: vertical;
+        transition: all 0.3s ease;
+      }
+
+      textarea:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 8px rgba(0, 255, 234, 0.4);
+      }
+
+      button {
+        padding: 10px 15px;
+        background-color: var(--primary-color);
+        color: #000;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-right: 10px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+      }
+
+      button:hover {
+        background-color: #00e6d2;
+        transform: translateY(-2px);
+        box-shadow: 0 0 15px rgba(0, 255, 234, 0.5);
+      }
+
+      .query-editor {
+        width: 100%;
+        height: 150px;
+        padding: 15px;
+        font-family: "Fira Code", "Consolas", monospace;
+        background-color: #0f1419;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        color: var(--text-color);
+        overflow-x: auto;
+        white-space: pre;
+        transition: all 0.3s ease;
+      }
+
+      .query-editor:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 8px rgba(0, 255, 234, 0.4);
+      }
+
+      /* Syntax highlighting overrides */
+      .hljs {
+        background: transparent !important;
+        padding: 0 !important;
+      }
+
+      .response-container {
+        margin-top: 20px;
+        overflow-x: auto;
+        background-color: var(--card-bg);
+        border-radius: 8px;
+        padding: 0 15px;
+        border: 1px solid var(--border-color);
+      }
+
+      .status-message {
+        margin-bottom: 10px;
+        font-style: italic;
+        color: var(--muted-text);
+      }
+
+      .result-table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 15px 0;
+        font-family: "SF Pro Display", "Segoe UI", Arial, sans-serif;
+      }
+
+      .result-table th,
+      .result-table td {
+        border: 1px solid var(--border-color);
+        padding: 12px;
+        text-align: left;
+      }
+
+      .result-table th {
+        background-color: var(--card-bg);
+        position: sticky;
+        top: 0;
+        color: var(--primary-color);
+        font-weight: 600;
+      }
+
+      .result-table tr:nth-child(even) {
+        background-color: #232323;
+      }
+
+      .result-table tr:hover {
+        background-color: var(--hover-color);
+      }
+
+      .tabs {
+        display: flex;
+        margin-bottom: 20px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 5px;
+      }
+
+      .tab {
+        padding: 10px 20px;
+        margin-right: 5px;
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px 8px 0 0;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .tab:hover {
+        background-color: var(--hover-color);
+      }
+
+      .tab.active {
+        background-color: var(--primary-color);
+        color: #000;
+        border-color: var(--primary-color);
+        font-weight: 600;
+      }
+
+      .query-examples {
+        margin-top: 30px;
+        padding: 20px;
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      }
+
+      .query-examples h3 {
+        margin-top: 0;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 10px;
+      }
+
+      .example {
+        cursor: pointer;
+        color: var(--secondary-color);
+        margin-bottom: 12px;
+        padding: 8px;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+      }
+
+      .example:hover {
+        background-color: var(--hover-color);
+        color: var(--primary-color);
+        text-shadow: 0 0 3px rgba(0, 255, 234, 0.3);
+      }
+
+      .action-buttons {
+        display: flex;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .secondary-btn {
+        background-color: var(--secondary-color);
+        color: white;
+      }
+
+      .secondary-btn:hover {
+        background-color: #b366ff;
+        box-shadow: 0 0 15px rgba(166, 77, 255, 0.5);
+      }
+
+      /* Added styling for the confirm delete dialog */
+      #confirm-delete {
+        background-color: #252525;
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 3px solid var(--danger-color);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>SQL Query Tester</h1>
+
+    <div class="tabs">
+      <div class="tab active" id="direct-tab">Direct SQL</div>
+      <div class="tab" id="nl-tab">Natural Language</div>
+    </div>
+
+    <div class="container" id="direct-container">
+      <h2>Enter SQL Query</h2>
+      <textarea id="sql-query" placeholder="SELECT * FROM Books;"></textarea>
+      <div class="action-buttons">
+        <button id="execute-btn">Execute Query</button>
+        <button id="clear-sql-btn" class="secondary-btn">Clear</button>
+      </div>
+
+      <h2>Response</h2>
+      <div class="status-message" id="sql-status"></div>
+      <div class="response-container">
+        <div id="sql-response-table"></div>
+      </div>
+      <div
+        class="query-editor"
+        id="sql-response-editor"
+        contenteditable="true"
+        spellcheck="false"
+      ></div>
+     
+    </div>
+
+    <div class="container" id="nl-container" style="display: none">
+      <h2>Enter Natural Language Query</h2>
+      <textarea
+        id="nl-query"
+        placeholder="Show all books published after 1900"
+      ></textarea>
+      <div class="action-buttons">
+        <button id="generate-btn">Generate SQL</button>
+        <button id="clear-nl-btn" class="secondary-btn">Clear</button>
+      </div>
+
+      <h2>Generated SQL</h2>
+      <div
+        class="query-editor"
+        id="generated-sql"
+        contenteditable="true"
+        spellcheck="false"
+      ></div>
+      <div class="action-buttons">
+        <button id="execute-generated-btn" style="display: none">
+          Execute Generated SQL
+        </button>
+        <button
+          id="copy-generated-sql"
+          style="display: none"
+          class="secondary-btn"
+        >
+          Copy SQL
+        </button>
+      </div>
+
+      <h2>Response</h2>
+      <div class="status-message" id="nl-status"></div>
+      <div class="response-container">
+        <div id="nl-response-table"></div>
+      </div>
+    </div>
+    <!-- Add this just before the query-examples div -->
+    <div class="admin-controls">
+      <h3>Database Management</h3>
+      <button id="delete-tables-btn" class="danger-btn">
+        Delete All Tables
+      </button>
+      <div id="confirm-delete" style="display: none; margin-top: 10px">
+        <p>
+          Are you sure you want to delete all tables? This action cannot be
+          undone.
+        </p>
+        <button id="confirm-delete-btn" class="danger-btn">
+          Confirm Delete
+        </button>
+        <button id="cancel-delete-btn">Cancel</button>
+      </div>
+      <div class="status-message" id="delete-status"></div>
+    </div>
+
+    <div class="query-examples">
+      <h3>Example Queries</h3>
+      <div class="example" data-query="SELECT * FROM Books;">
+        Show all books
+      </div>
+      <div
+        class="example"
+        data-query="SELECT b.Title, a.FirstName, a.LastName FROM Books b JOIN Authors a ON b.AuthorID = a.AuthorID;"
+      >
+        Show books with author names
+      </div>
+      <div
+        class="example"
+        data-query="SELECT p.FirstName, p.LastName, b.Title, l.LoanDate, l.DueDate, l.ReturnDate FROM Loans l JOIN Books b ON l.BookID = b.BookID JOIN Patrons p ON l.PatronID = p.PatronID;"
+      >
+        Show all loans with patron and book details
+      </div>
+      <div
+        class="example"
+        data-query="SELECT b.Title, g.GenreName FROM Books b JOIN Genres g ON b.GenreID = g.GenreID;"
+      >
+        Show books with genres
+      </div>
+    </div>
+
+    <script>
+      // DOM elements
+      const directTab = document.getElementById("direct-tab");
+      const nlTab = document.getElementById("nl-tab");
+      const directContainer = document.getElementById("direct-container");
+      const nlContainer = document.getElementById("nl-container");
+      const sqlQuery = document.getElementById("sql-query");
+      const executeBtn = document.getElementById("execute-btn");
+      const sqlStatus = document.getElementById("sql-status");
+      const sqlResponseTable = document.getElementById("sql-response-table");
+      const sqlResponseEditor = document.getElementById("sql-response-editor");
+      const executeEditedSql = document.getElementById("execute-edited-sql");
+      const nlQuery = document.getElementById("nl-query");
+      const generateBtn = document.getElementById("generate-btn");
+      const generatedSql = document.getElementById("generated-sql");
+      const executeGeneratedBtn = document.getElementById(
+        "execute-generated-btn"
+      );
+      const copyGeneratedSql = document.getElementById("copy-generated-sql");
+      const nlStatus = document.getElementById("nl-status");
+      const nlResponseTable = document.getElementById("nl-response-table");
+      const examples = document.querySelectorAll(".example");
+      const clearSqlBtn = document.getElementById("clear-sql-btn");
+      const clearNlBtn = document.getElementById("clear-nl-btn");
+
+      // Initialize syntax highlighting
+      function applySqlHighlighting(element) {
+        element.classList.add("hljs");
+        element.classList.add("language-sql");
+        hljs.highlightElement(element);
+      }
+
+      // Apply highlighting to editors when content changes
+      function setupSyntaxHighlighting() {
+        // For SQL editor response
+        sqlResponseEditor.addEventListener("input", function () {
+          applySqlHighlighting(this);
+        });
+
+        // For generated SQL
+        generatedSql.addEventListener("input", function () {
+          applySqlHighlighting(this);
+        });
+      }
+
+      // Tab switching
+      directTab.addEventListener("click", () => {
+        directTab.classList.add("active");
+        nlTab.classList.remove("active");
+        directContainer.style.display = "flex";
+        nlContainer.style.display = "none";
+      });
+
+      nlTab.addEventListener("click", () => {
+        nlTab.classList.add("active");
+        directTab.classList.remove("active");
+        nlContainer.style.display = "flex";
+        directContainer.style.display = "none";
+      });
+
+      // Helper function to create an HTML table from JSON data
+      function createTable(data) {
+        if (!data || !data.results || data.results.length === 0) {
+          return "<p>No results returned.</p>";
+        }
+
+        const tableElement = document.createElement("table");
+        tableElement.className = "result-table";
+
+        // Create header row
+        const thead = document.createElement("thead");
+        const headerRow = document.createElement("tr");
+
+        const columnNames = Object.keys(data.results[0]);
+        columnNames.forEach((colName) => {
+          const th = document.createElement("th");
+          th.textContent = colName;
+          headerRow.appendChild(th);
+        });
+
+        thead.appendChild(headerRow);
+        tableElement.appendChild(thead);
+
+        // Create data rows
+        const tbody = document.createElement("tbody");
+        data.results.forEach((row) => {
+          const tr = document.createElement("tr");
+
+          columnNames.forEach((colName) => {
+            const td = document.createElement("td");
+            td.textContent = row[colName] !== null ? row[colName] : "NULL";
+            tr.appendChild(td);
+          });
+
+          tbody.appendChild(tr);
+        });
+
+        tableElement.appendChild(tbody);
+        return tableElement;
+      }
+
+      // Execute SQL query
+      async function executeQuery(
+        query,
+        statusElement,
+        resultTableElement,
+        responseEditorElement
+      ) {
+        if (!query) {
+          statusElement.textContent = "Please enter a SQL query";
+          return;
+        }
+
+        statusElement.textContent = "Executing query...";
+        resultTableElement.innerHTML = "";
+
+        if (responseEditorElement) {
+          responseEditorElement.textContent = "";
+        }
+
+        try {
+          const response = await fetch("/api/execute-sql", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ query }),
+          });
+
+          const data = await response.json();
+
+          if (!data.success) {
+            statusElement.textContent = `Error: ${data.error}`;
+            return;
+          }
+
+          statusElement.textContent = data.message;
+
+          if (data.isMultiStatement) {
+            // Handle multiple statements
+            data.results.forEach((result, index) => {
+              const queryHeader = document.createElement("h3");
+              queryHeader.textContent = `Query ${index + 1}: ${result.query}`;
+              resultTableElement.appendChild(queryHeader);
+
+              if (result.results && result.results.length > 0) {
+                const tableWrapper = document.createElement("div");
+                tableWrapper.style.marginBottom = "20px";
+
+                const tableData = {
+                  results: result.results,
+                };
+
+                tableWrapper.appendChild(createTable(tableData));
+                resultTableElement.appendChild(tableWrapper);
+              } else {
+                const noResults = document.createElement("p");
+                noResults.textContent = "No results returned for this query.";
+                resultTableElement.appendChild(noResults);
+              }
+            });
+          } else {
+            // Handle single statement
+            if (data.results && data.results.length > 0) {
+              resultTableElement.appendChild(createTable(data));
+
+              if (responseEditorElement) {
+                generatedSql.textContent = data.query;
+                applySqlHighlighting(generatedSql);
+                applySqlHighlighting(responseEditorElement);
+
+
+                applySqlHighlighting(responseEditorElement);
+              }
+            } else {
+              const noResults = document.createElement("p");
+              noResults.textContent =
+                "Query executed successfully, but no results were returned.";
+              resultTableElement.appendChild(noResults);
+            }
+          }
+        } catch (error) {
+          statusElement.textContent = `Error: ${error.message}`;
+        }
+      }
+
+      // Execute direct SQL query
+      executeBtn.addEventListener("click", () => {
+        const query = sqlQuery.value.trim();
+        executeQuery(query, sqlStatus, sqlResponseTable, sqlResponseEditor);
+      });
+
+      // Execute edited SQL from response
+    
+
+      // Generate SQL from natural language
+      generateBtn.addEventListener("click", async () => {
+        const prompt = nlQuery.value.trim();
+        if (!prompt) {
+          generatedSql.textContent = "Please enter a natural language query";
+          return;
+        }
+
+        generatedSql.textContent = "Generating SQL...";
+        executeGeneratedBtn.style.display = "none";
+        copyGeneratedSql.style.display = "none";
+        nlStatus.textContent = "";
+        nlResponseTable.innerHTML = "";
+
+        try {
+          const response = await fetch("/api/generate-sql", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ prompt }),
+          });
+
+          const data = await response.json();
+
+          if (!data.success) {
+            generatedSql.textContent = `Error: ${data.error}`;
+            return;
+          }
+
+          generatedSql.textContent = data.query;
+          applySqlHighlighting(generatedSql);
+          executeGeneratedBtn.style.display = "block";
+          copyGeneratedSql.style.display = "block";
+        } catch (error) {
+          generatedSql.textContent = `Error: ${error.message}`;
+        }
+      });
+
+      // Copy generated SQL
+      copyGeneratedSql.addEventListener("click", () => {
+        const text = generatedSql.textContent;
+        navigator.clipboard.writeText(text).then(
+          () => {
+            const originalText = copyGeneratedSql.textContent;
+            copyGeneratedSql.textContent = "Copied!";
+            setTimeout(() => {
+              copyGeneratedSql.textContent = originalText;
+            }, 2000);
+          },
+          (err) => {
+            console.error("Could not copy text: ", err);
+          }
+        );
+      });
+
+      // Execute generated SQL
+      executeGeneratedBtn.addEventListener("click", () => {
+        const query = generatedSql.textContent.trim();
+        executeQuery(query, nlStatus, nlResponseTable);
+      });
+
+      // Example queries
+      examples.forEach((example) => {
+        example.addEventListener("click", () => {
+          sqlQuery.value = example.getAttribute("data-query");
+          // Auto-switch to direct SQL tab
+          directTab.click();
+        });
+      });
+
+      // Clear buttons
+      clearSqlBtn.addEventListener("click", () => {
+        sqlQuery.value = "";
+        sqlStatus.textContent = "";
+        sqlResponseTable.innerHTML = "";
+        sqlResponseEditor.textContent = "";
+      });
+
+      clearNlBtn.addEventListener("click", () => {
+        nlQuery.value = "";
+        generatedSql.textContent = "";
+        nlStatus.textContent = "";
+        nlResponseTable.innerHTML = "";
+        executeGeneratedBtn.style.display = "none";
+        copyGeneratedSql.style.display = "none";
+      });
+      // Database management - Delete all tables
+      const deleteTablesBtn = document.getElementById("delete-tables-btn");
+      const confirmDeleteDiv = document.getElementById("confirm-delete");
+      const confirmDeleteBtn = document.getElementById("confirm-delete-btn");
+      const cancelDeleteBtn = document.getElementById("cancel-delete-btn");
+      const deleteStatus = document.getElementById("delete-status");
+
+      // Show confirmation when delete button is clicked
+      deleteTablesBtn.addEventListener("click", () => {
+        confirmDeleteDiv.style.display = "block";
+        deleteStatus.textContent = "";
+      });
+
+      // Cancel delete operation
+      cancelDeleteBtn.addEventListener("click", () => {
+        confirmDeleteDiv.style.display = "none";
+      });
+
+      // Confirm delete operation
+      confirmDeleteBtn.addEventListener("click", async () => {
+        try {
+          deleteStatus.textContent = "Deleting tables...";
+
+          const response = await fetch("/api/delete-all-tables", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ confirmation: "CONFIRM_DELETE" }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            deleteStatus.textContent = data.message;
+            // Clear any query results
+            sqlResponseTable.innerHTML = "";
+            nlResponseTable.innerHTML = "";
+            sqlStatus.textContent = "";
+            nlStatus.textContent = "";
+          } else {
+            deleteStatus.textContent = `Error: ${data.error}`;
+          }
+        } catch (error) {
+          deleteStatus.textContent = `Error: ${error.message}`;
+        } finally {
+          confirmDeleteDiv.style.display = "none";
+        }
+      });
+
+      // Initialize syntax highlighting on page load
+      document.addEventListener("DOMContentLoaded", function () {
+        setupSyntaxHighlighting();
+      });
+    </script>
+  </body>
+</html>
