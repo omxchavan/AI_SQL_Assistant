@@ -336,7 +336,9 @@ app.get("/tester", (req, res) => {
 app.get("/csv", (req, res) => {
   res.render("csv");
 });
-
+app.get("/tutorial", (req, res) => {
+  res.render("tutorial");
+});
 // Route to handle SQL query generation
 app.post("/api/generate-sql", async (req, res) => {
   try {
