@@ -1,0 +1,55 @@
+  /* CodeMirror editor base */
+  .CodeMirror {
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    font-family: "Fira Code", monospace;
+    font-size: 14px;
+    background: var(--card-bg);
+    color: var(--text-color);
+    padding: 10px;
+  }
+
+  /* Autocomplete dropdown */
+  .CodeMirror-hints {
+    background: #000; /* Pure black */
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+    max-height: 220px;
+    overflow-y: auto;
+    font-family: "Fira Code", monospace;
+    font-size: 13px;
+    padding: 4px;
+    color: var(--text-color);
+  }
+
+  /* Each hint item */
+  .CodeMirror-hint {
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: background 0.2s, color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Highlighted item */
+  .CodeMirror-hint-active {
+    background: var(--hover-color);
+    color: var(--primary-color);
+  }
+
+  /* Scrollbar */
+  .CodeMirror-hints::-webkit-scrollbar {
+    width: 6px;
+  }
+  .CodeMirror-hints::-webkit-scrollbar-thumb {
+    background: var(--secondary-color);
+    border-radius: 3px;
+  }
+
+  /* Syntax-like coloring inside dropdown */
+  .cm-hint-keyword { color: #569cd6; }   /* SQL keywords (blue) */
+  .cm-hint-func    { color: #dcdcaa; }   /* Functions (yellowish) */
+  .cm-hint-table   { color: #4ec9b0; }   /* Tables (cyan/green) */
+  .cm-hint-column  { color: #9cdcfe; }   /* Columns (light blue) */

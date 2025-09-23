@@ -14,6 +14,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <title>CSV Query Tester</title>
+    <!-- CodeMirror CSS & JS -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/show-hint.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/sql/sql.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/show-hint.min.js"></script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css"
@@ -21,17 +37,18 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/sql.min.js"></script>
     <link rel="stylesheet" href="/css/csv.css" />
+    <link rel="stylesheet" href="/css/syntax.css">
   </head>
   <body>
     <nav class="navbar">
-  <div class="nav-brand">SQL Query Tester</div>
-  <ul class="nav-links">
-    <li><a href="/">Home</a></li>
-    <li><a href="/tutorial">Tutorial</a></li>
-    <li><a href="/tester">Tester</a></li>
-    <li><a href="/csv">CSV</a></li>
-  </ul>
-</nav>
+      <div class="nav-brand">SQL Query Tester</div>
+      <ul class="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/tutorial">Tutorial</a></li>
+        <li><a href="/tester">Tester</a></li>
+        <li><a href="/csv">CSV</a></li>
+      </ul>
+    </nav>
     <h1>CSV Query Tester</h1>
 
     <div class="tabs">
