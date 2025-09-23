@@ -3,9 +3,11 @@
     "@google/generative-ai": "^0.24.0",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
+    "csv-parser": "^3.2.0",
     "dotenv": "^16.4.7",
     "ejs": "^3.1.10",
     "express": "^4.21.2",
+    "multer": "^2.0.2",
     "nodemon": "^3.1.9",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7"

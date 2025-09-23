@@ -6,14 +6,19 @@ const cors = require("cors");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const sqlite3 = require("sqlite3");
 const { open } = require("sqlite");
+const csv = require("csv-parser");
+const multer = require("multer");
+const fs = require("fs");
+const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 10000;
 app.set("view engine", "ejs");
 app.set("views", "./views");
 
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: "10mb" }));
 app.use(cors());
+app.use(express.static("public"));
 
 // Use API key from environment variable
 const API_KEY = process.env.GEMINI_API_KEY;
@@ -254,10 +259,86 @@ function formatResultsAsTable(results) {
   };
 }
 
+// Helper function to parse CSV data
+function parseCSV(csvText) {
+  const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== '');
+  if (lines.length < 2) {
+    throw new Error("CSV file must have at least a header row and one data row");
+  }
+
+  // Parse headers
+  const headers = parseCSVLine(lines[0]);
+  
+  // Parse data rows
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    if (lines[i].trim() === '') continue;
+    
+    const values = parseCSVLine(lines[i]);
+    const row = {};
+    
+    headers.forEach((header, index) => {
+      row[header] = values[index] || '';
+    });
+    
+    rows.push(row);
+  }
+
+  return { headers, rows };
+}
+
+// Helper function to parse a single CSV line
+function parseCSVLine(line) {
+  const values = [];
+  let current = '';
+  let inQuotes = false;
+  
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === ',' && !inQuotes) {
+      values.push(current.trim());
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  
+  values.push(current.trim());
+  return values;
+}
+
+// Configure multer for file uploads
+const storage = multer.memoryStorage();
+const upload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'text/csv' || file.originalname.endsWith('.csv')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only CSV files are allowed'));
+    }
+  }
+});
+
+// Routes
 app.get("/", (req, res) => {
   res.render("index");
 });
-
+app.get("/tester", (req, res) => {
+  res.render("tester");
+});
+app.get("/csv", (req, res) => {
+  res.render("csv");
+});
+app.get("/tutorial", (req, res) => {
+  res.render("tutorial");
+});
 // Route to handle SQL query generation
 app.post("/api/generate-sql", async (req, res) => {
   try {
@@ -412,6 +493,145 @@ app.post("/api/execute-sql", async (req, res) => {
   }
 });
 
+// Route to generate SQL for CSV data
+app.post("/api/generate-csv-sql", async (req, res) => {
+  try {
+    const { prompt, csvData, filename } = req.body;
+
+    if (!prompt) {
+      return res.status(400).json({ error: "Missing prompt in request body" });
+    }
+
+    if (!csvData || !csvData.headers) {
+      return res.status(400).json({ error: "Missing or invalid CSV data" });
+    }
+
+    // Get the generative model (Gemini)
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+    // Create a prompt for SQL query generation with CSV context
+    const fullPrompt = `
+      You are a SQLITE expert. Convert the following natural language request into a valid SQLITE query.
+      The CSV data has the following columns: ${csvData.headers.join(", ")}
+      The table name should be "uploaded_csv".
+      
+      Only return the SQLITE query without any additional explanation or markdown.
+      Do not include backticks, SQLITE comments, or markdown formatting.
+      
+      Request: ${prompt}
+    `;
+
+    // Generate content
+    const result = await model.generateContent(fullPrompt);
+    const response = await result.response;
+    let sqlQuery = response.text();
+    sqlQuery = cleanSQLQuery(sqlQuery);
+
+    return res.status(200).json({
+      success: true,
+      query: sqlQuery,
+    });
+  } catch (error) {
+    console.error("Error in /api/generate-csv-sql route:", error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || "Internal server error",
+    });
+  }
+});
+
+// Route to execute SQL queries on CSV data
+app.post("/api/execute-csv-sql", async (req, res) => {
+  try {
+    const { query, csvData, filename } = req.body;
+
+    if (!query) {
+      return res.status(400).json({ error: "Missing query in request body" });
+    }
+
+    if (!csvData || !csvData.headers || !csvData.rows) {
+      return res.status(400).json({ error: "Missing or invalid CSV data" });
+    }
+
+    // Clean the SQL query
+    const cleanedQuery = cleanSQLQuery(query);
+
+    // Create a temporary in-memory database for CSV data
+    const tempDb = await open({
+      filename: ":memory:",
+      driver: sqlite3.Database,
+    });
+
+    try {
+      // Create table based on CSV headers
+      const columns = csvData.headers.map(header => `"${header}" TEXT`).join(", ");
+      await tempDb.exec(`CREATE TABLE uploaded_csv (${columns})`);
+
+      // Insert CSV data
+      const placeholders = csvData.headers.map(() => '?').join(', ');
+      const insertStmt = await tempDb.prepare(
+        `INSERT INTO uploaded_csv VALUES (${placeholders})`
+      );
+
+      for (const row of csvData.rows) {
+        const values = csvData.headers.map(header => row[header] || '');
+        await insertStmt.run(values);
+      }
+
+      await insertStmt.finalize();
+
+      // Execute the query
+      const results = await tempDb.all(cleanedQuery);
+
+      // Format the results
+      const formattedResults = formatResultsAsTable(results);
+
+      return res.status(200).json({
+        success: true,
+        query: cleanedQuery,
+        results: formattedResults.raw,
+        formattedTable: formattedResults.formatted,
+        message: `Query executed successfully. ${results.length} row(s) returned.`,
+        columns: formattedResults.columnInfo,
+      });
+    } finally {
+      // Close the temporary database
+      await tempDb.close();
+    }
+  } catch (error) {
+    console.error("Error executing CSV SQL query:", error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || "Error executing SQL query",
+    });
+  }
+});
+
+// Route to handle CSV file upload
+app.post("/api/upload-csv", upload.single('csvFile'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    const csvText = req.file.buffer.toString();
+    const parsedData = parseCSV(csvText);
+
+    return res.status(200).json({
+      success: true,
+      filename: req.file.originalname,
+      data: parsedData,
+      message: "CSV file parsed successfully"
+    });
+  } catch (error) {
+    console.error("Error processing CSV file:", error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || "Error processing CSV file",
+    });
+  }
+});
+
 // Simple route to delete all tables without re-creating them
 app.post("/api/delete-all-tables", async (req, res) => {
   try {
@@ -459,6 +679,7 @@ app.post("/api/delete-all-tables", async (req, res) => {
     });
   }
 });
+
 // Health check route
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "healthy" });

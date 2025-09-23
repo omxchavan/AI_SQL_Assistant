@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="description"
+      content="SQL Query Tester lets you write, run, and learn SQL queries online with AI-powered suggestions and real-time results."
+    />
+    <meta
+      name="keywords"
+      content="SQL, SQL tester, SQL online, run SQL queries, AI SQL, learn SQL"
+    />
+    <meta name="author" content="Om Chavan" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <title>SQL Query Tester</title>
+    <!-- CodeMirror CSS & JS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/sql-hint.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/sql.min.js"></script>
+    <link rel="stylesheet" href="/css/tester.css" />
+    <link rel="stylesheet" href="/css/syntax.css">
+  </head>
+  <body>
+    <nav class="navbar">
+  <div class="nav-brand">SQL Query Tester</div>
+  <ul class="nav-links">
+    <li><a href="/">Home</a></li>
+    <li><a href="/tutorial">Tutorial</a></li>
+    <li><a href="/tester">Tester</a></li>
+    <li><a href="/csv">CSV</a></li>
+  </ul>
+</nav>
+    <h1>SQL Query Tester</h1>
+
+    <div class="tabs">
+      <div class="tab active" id="direct-tab">Direct SQL</div>
+      <div class="tab" id="nl-tab">Natural Language</div>
+    </div>
+
+    <div class="container" id="direct-container">
+      <h2>Enter SQL Query</h2>
+      <textarea id="sql-query"></textarea>
+      <div class="action-buttons">
+        <button id="execute-btn">Execute Query</button>
+        <button id="clear-sql-btn" class="secondary-btn">Clear</button>
+      </div>
+
+      <h2>Response</h2>
+      <div class="status-message" id="sql-status"></div>
+      <div class="response-container">
+        <div id="sql-response-table"></div>
+      </div>
+      <div
+        class="query-editor"
+        id="sql-response-editor"
+        contenteditable="true"
+        spellcheck="false"
+      ></div>
+    </div>
+
+    <div class="container" id="nl-container" style="display: none">
+      <h2>Enter Natural Language Query</h2>
+      <textarea
+        id="nl-query"
+        placeholder="Show all books published after 1900"
+      ></textarea>
+      <div class="action-buttons">
+        <button id="generate-btn">Generate SQL</button>
+        <button id="clear-nl-btn" class="secondary-btn">Clear</button>
+      </div>
+
+      <h2>Generated SQL</h2>
+      <div
+        class="query-editor"
+        id="generated-sql"
+        contenteditable="true"
+        spellcheck="false"
+      ></div>
+      <div class="action-buttons">
+        <button id="execute-generated-btn" style="display: none">
+          Execute Generated SQL
+        </button>
+        <button
+          id="copy-generated-sql"
+          style="display: none"
+          class="secondary-btn"
+        >
+          Copy SQL
+        </button>
+      </div>
+
+      <h2>Response</h2>
+      <div class="status-message" id="nl-status"></div>
+      <div class="response-container">
+        <div id="nl-response-table"></div>
+      </div>
+    </div>
+    <!-- Add this just before the query-examples div -->
+    <div class="admin-controls">
+      <h3>Database Management</h3>
+      <button id="delete-tables-btn" class="danger-btn">
+        Delete All Tables
+      </button>
+      <div id="confirm-delete" style="display: none; margin-top: 10px">
+        <p>
+          Are you sure you want to delete all tables? This action cannot be
+          undone.
+        </p>
+        <button id="confirm-delete-btn" class="danger-btn">
+          Confirm Delete
+        </button>
+        <button id="cancel-delete-btn">Cancel</button>
+      </div>
+      <div class="status-message" id="delete-status"></div>
+    </div>
+
+    <div class="query-examples">
+      <h3>Example Queries</h3>
+      <div class="example" data-query="SELECT * FROM Books;">
+        Show all books
+      </div>
+      <div
+        class="example"
+        data-query="SELECT b.Title, a.FirstName, a.LastName FROM Books b JOIN Authors a ON b.AuthorID = a.AuthorID;"
+      >
+        Show books with author names
+      </div>
+      <div
+        class="example"
+        data-query="SELECT p.FirstName, p.LastName, b.Title, l.LoanDate, l.DueDate, l.ReturnDate FROM Loans l JOIN Books b ON l.BookID = b.BookID JOIN Patrons p ON l.PatronID = p.PatronID;"
+      >
+        Show all loans with patron and book details
+      </div>
+      <div
+        class="example"
+        data-query="SELECT b.Title, g.GenreName FROM Books b JOIN Genres g ON b.GenreID = g.GenreID;"
+      >
+        Show books with genres
+      </div>
+    </div>
+
+    <footer>&copy; 2025 SQL Query Tester. Built with ❤️ for developers.</footer>
+  </body>
+  <script src="/js/tester.js"></script>
+  <script src="/js/syntax.js"></script>
+
+  
+</html>
