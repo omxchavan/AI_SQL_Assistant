@@ -66,7 +66,7 @@ If you encounter issues with your deployment:
 - `POST /api/generate-sql`: Generate SQL from natural language
 - `POST /api/delete-all-tables`: Delete all tables and reset the database
 - `GET /health`: Health check and diagnostic information
-- `GET /api/debug`: Debug information (non-production environments only)
+
 
 ## License
 

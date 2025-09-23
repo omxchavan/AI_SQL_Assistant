@@ -2,6 +2,15 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta
+      name="description"
+      content="SQL Query Tester lets you write, run, and learn SQL queries online with AI-powered suggestions and real-time results."
+    />
+    <meta
+      name="keywords"
+      content="SQL, SQL tester, SQL online, run SQL queries, AI SQL, learn SQL"
+    />
+    <meta name="author" content="Om Chavan" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tutorial | SQL Query Tester</title>
     <link rel="icon" type="image/png" href="/favicon.png" />
@@ -16,120 +25,132 @@
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-
     />
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/css/tutorial.css" />
     <style>
-    
-     body {
-  font-family: "Inter", sans-serif;
-  line-height: 1.7;
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 30px 20px;
-  background: var(--bg-color);
-  color: var(--text-color);
-}
+      
+      body {
+        font-family: "Inter", sans-serif;
+        line-height: 1.7;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 30px 20px;
+        background: var(--bg-color);
+        color: var(--text-color);
+      }
 
-header h1 {
-  font-size: 2.5rem;
-  margin-bottom: 10px;
-  color: var(--primary-color);
-}
+      header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        color: var(--primary-color);
+      }
 
-header p {
-  font-size: 1.1rem;
-  color: var(--secondary-color);
-}
+      header p {
+        font-size: 1.1rem;
+        color: var(--secondary-color);
+      }
 
-section {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
-  padding: 25px 30px;
-  margin-bottom: 25px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
-}
+      section {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 25px 30px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+      }
 
-section h2 {
-  margin-top: 0;
-  font-size: 1.4rem;
-  color: var(--secondary-color);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+      section h2 {
+        margin-top: 0;
+        font-size: 1.4rem;
+        color: var(--secondary-color);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
 
-code {
-  background: var(--hover-color);
-  padding: 3px 6px;
-  border-radius: 6px;
-  font-size: 0.9em;
-  font-family: monospace;
-  color: var(--primary-color);
-}
+      code {
+        background: var(--hover-color);
+        padding: 3px 6px;
+        border-radius: 6px;
+        font-size: 0.9em;
+        font-family: monospace;
+        color: var(--primary-color);
+      }
 
-.note {
-  background: rgba(166, 77, 255, 0.1);
-  border-left: 5px solid var(--secondary-color);
-  padding: 12px 15px;
-  border-radius: 6px;
-  margin: 15px 0;
-  font-size: 0.95rem;
-  color: var(--secondary-color);
-}
+      .note {
+        background: rgba(166, 77, 255, 0.1);
+        border-left: 5px solid var(--secondary-color);
+        padding: 12px 15px;
+        border-radius: 6px;
+        margin: 15px 0;
+        font-size: 0.95rem;
+        color: var(--secondary-color);
+      }
 
-.danger {
-  background: rgba(255, 58, 94, 0.1);
-  border-left: 5px solid var(--danger-color);
-  padding: 12px 15px;
-  border-radius: 6px;
-  margin: 15px 0;
-  font-size: 0.95rem;
-  color: var(--danger-color);
-}
+      .danger {
+        background: rgba(255, 58, 94, 0.1);
+        border-left: 5px solid var(--danger-color);
+        padding: 12px 15px;
+        border-radius: 6px;
+        margin: 15px 0;
+        font-size: 0.95rem;
+        color: var(--danger-color);
+      }
 
-a.back-link {
-  display: inline-block;
-  margin-top: 20px;
-  text-decoration: none;
-  background: var(--secondary-color);
-  color: white;
-  padding: 10px 18px;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: background 0.2s ease-in-out;
-}
+      a.back-link {
+        display: inline-block;
+        margin-top: 20px;
+        text-decoration: none;
+        background: var(--secondary-color);
+        color: white;
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: background 0.2s ease-in-out;
+      }
 
-a.back-link:hover {
-  background: var(--primary-color);
-  color: #000;
-}
+      a.back-link:hover {
+        background: var(--primary-color);
+        color: #000;
+      }
 
-/* Icon colors tied to theme */
-.icon-blue {
-  color: var(--primary-color);
-}
-.icon-green {
-  color: var(--success-color);
-}
-.icon-red {
-  color: var(--danger-color);
-}
-.icon-yellow {
-  color: #facc15; /* optional accent */
-}
-
+      /* Icon colors tied to theme */
+      .icon-blue {
+        color: var(--primary-color);
+      }
+      .icon-green {
+        color: var(--success-color);
+      }
+      .icon-red {
+        color: var(--danger-color);
+      }
+      .icon-yellow {
+        color: #facc15; /* optional accent */
+      }
     </style>
   </head>
   <body>
+    <nav class="navbar">
+  <div class="nav-brand">SQL Query Tester</div>
+  <ul class="nav-links">
+    <li><a href="/">Home</a></li>
+    <li><a href="/tutorial">Tutorial</a></li>
+    <li><a href="/tester">Tester</a></li>
+    <li><a href="/csv">CSV</a></li>
+  </ul>
+</nav>
     <header>
-      <h1><i class="fa-solid fa-database icon-blue"></i> SQL Query Tester – Tutorial</h1>
+      <h1>
+        <i class="fa-solid fa-database icon-blue"></i> SQL Query Tester –
+        Tutorial
+      </h1>
       <p>Master the app step by step and avoid common pitfalls 🚀</p>
     </header>
 
     <section>
-      <h2><i class="fa-solid fa-circle-info icon-blue"></i> 1. What This App Does</h2>
+      <h2>
+        <i class="fa-solid fa-circle-info icon-blue"></i> 1. What This App Does
+      </h2>
       <p>SQL Query Tester helps you:</p>
       <ul>
         <li>Write and run <strong>SQL queries directly</strong></li>
@@ -140,20 +161,23 @@ a.back-link:hover {
     </section>
 
     <section>
-      <h2><i class="fa-solid fa-terminal icon-green"></i> 2. Using Direct SQL</h2>
+      <h2>
+        <i class="fa-solid fa-terminal icon-green"></i> 2. Using Direct SQL
+      </h2>
       <ol>
         <li>Open the <strong>Direct SQL</strong> tab.</li>
         <li>Type or paste an SQL query.</li>
         <li>Click <strong>Execute Query</strong> to run it.</li>
         <li>Results will appear below.</li>
       </ol>
-      <div class="note">
-        💡 Example: <code>SELECT * FROM Books;</code>
-      </div>
+      <div class="note">💡 Example: <code>SELECT * FROM Books;</code></div>
     </section>
 
     <section>
-      <h2><i class="fa-solid fa-robot icon-blue"></i> 3. Using AI (Natural Language)</h2>
+      <h2>
+        <i class="fa-solid fa-robot icon-blue"></i> 3. Using AI (Natural
+        Language)
+      </h2>
       <ol>
         <li>Go to the <strong>Natural Language</strong> tab.</li>
         <li>Type your question in plain English.</li>
@@ -172,49 +196,71 @@ a.back-link:hover {
     </section>
 
     <section>
-      <h2><i class="fa-solid fa-triangle-exclamation icon-yellow"></i> 4. Common Mistakes to Avoid</h2>
+      <h2>
+        <i class="fa-solid fa-triangle-exclamation icon-yellow"></i> 4. Common
+        Mistakes to Avoid
+      </h2>
       <ul>
         <li>
-          <strong>Case Sensitivity:</strong>  
-          Keywords (<code>SELECT</code>, <code>FROM</code>) are safe, but table/column names might be case sensitive.  
-          Example: <code>Books</code> ≠ <code>books</code>
+          <strong>Case Sensitivity:</strong>
+          Keywords (<code>SELECT</code>, <code>FROM</code>) are safe, but
+          table/column names might be case sensitive. Example:
+          <code>Books</code> ≠ <code>books</code>
         </li>
-        <li><strong>Missing Semicolons:</strong> Always end queries with <code>;</code></li>
+        <li>
+          <strong>Missing Semicolons:</strong> Always end queries with
+          <code>;</code>
+        </li>
         <li><strong>Invalid Joins:</strong> Ensure join columns exist.</li>
         <li><strong>Empty Queries:</strong> Executing nothing will fail.</li>
-        <li><strong>AI SQL Edits:</strong> Double-check generated SQL for accuracy.</li>
+        <li>
+          <strong>AI SQL Edits:</strong> Double-check generated SQL for
+          accuracy.
+        </li>
       </ul>
     </section>
 
     <section>
-      <h2><i class="fa-solid fa-database icon-red"></i> 5. Database Management</h2>
-      <p>In the <strong>Database Management</strong> panel, you can delete all tables.</p>
+      <h2>
+        <i class="fa-solid fa-database icon-red"></i> 5. Database Management
+      </h2>
+      <p>
+        In the <strong>Database Management</strong> panel, you can delete all
+        tables.
+      </p>
       <div class="danger">
-        ⚠️ <strong>Warning:</strong> Deleting tables removes all data permanently. This cannot be undone.
+        ⚠️ <strong>Warning:</strong> Deleting tables removes all data
+        permanently. This cannot be undone.
       </div>
     </section>
 
     <section>
-      <h2><i class="fa-solid fa-lightbulb icon-green"></i> 6. Example Queries</h2>
+      <h2>
+        <i class="fa-solid fa-lightbulb icon-green"></i> 6. Example Queries
+      </h2>
       <ul>
         <li><code>SELECT * FROM Books;</code> – Show all books</li>
         <li>
           <code>
-            SELECT b.Title, a.FirstName, a.LastName  
-            FROM Books b JOIN Authors a ON b.AuthorID = a.AuthorID;
-          </code> – Books with authors
+            SELECT b.Title, a.FirstName, a.LastName FROM Books b JOIN Authors a
+            ON b.AuthorID = a.AuthorID;
+          </code>
+          – Books with authors
         </li>
         <li>
           <code>
-            SELECT p.FirstName, p.LastName, b.Title, l.LoanDate  
-            FROM Loans l  
-            JOIN Books b ON l.BookID = b.BookID  
-            JOIN Patrons p ON l.PatronID = p.PatronID;
-          </code> – Loan details with patrons
+            SELECT p.FirstName, p.LastName, b.Title, l.LoanDate FROM Loans l
+            JOIN Books b ON l.BookID = b.BookID JOIN Patrons p ON l.PatronID =
+            p.PatronID;
+          </code>
+          – Loan details with patrons
         </li>
       </ul>
     </section>
 
-    <a href="/tester" class="back-link"><i class="fa-solid fa-arrow-right"></i> Try SQL Query Tester</a>
+    <a href="/tester" class="back-link"
+      ><i class="fa-solid fa-arrow-right"></i> Try SQL Query Tester</a
+    >
+    <footer>&copy; 2025 SQL Query Tester. Built with ❤️ for developers.</footer>
   </body>
 </html>
