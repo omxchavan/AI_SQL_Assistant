@@ -3,7 +3,8 @@ require("dotenv").config(); // Load environment variables
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+// Using the new GenAI SDK, GenerativeAI has been deprecated 
+const { GoogleGenAI } = require("@google/genai");
 const sqlite3 = require("sqlite3");
 const { open } = require("sqlite");
 const csv = require("csv-parser");
@@ -22,7 +23,8 @@ app.use(express.static("public"));
 
 // Use API key from environment variable
 const API_KEY = process.env.GEMINI_API_KEY;
-const genAI = new GoogleGenerativeAI(API_KEY);
+// Authenticate API key and setup the client
+const genAI = new GoogleGenAI({apiKey: API_KEY});
 
 // Initialize SQLite database
 let db;
@@ -153,9 +155,6 @@ let db;
 // Helper function to generate SQL query from natural language
 async function generateSQLQuery(prompt) {
   try {
-    // Get the generative model (Gemini)
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-
     // Create a prompt for SQL query generation
     const fullPrompt = `
       You are a SQLITE expert. Convert the following natural language request into a valid SQLITE query.
@@ -166,10 +165,14 @@ async function generateSQLQuery(prompt) {
       Request: ${prompt}
     `;
 
-    // Generate content
-    const result = await model.generateContent(fullPrompt);
-    const response = await result.response;
-    return response.text();
+    // Get the generated response
+    const response = await genAI.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: fullPrompt
+    })
+
+    // Return the response 
+    return response.text;
   } catch (error) {
     console.error("Error generating SQL query:", error);
     throw new Error("Failed to generate SQL query");
