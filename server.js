@@ -1,16 +1,17 @@
-require("dotenv").config(); // Load environment variables
+import dotenv from 'dotenv';
+dotenv.config();
+// Load environment variables
 
-const express = require("express");
-const bodyParser = require("body-parser");
-const cors = require("cors");
-// Using the new GenAI SDK, GenerativeAI has been deprecated 
-const { GoogleGenAI } = require("@google/genai");
-const sqlite3 = require("sqlite3");
-const { open } = require("sqlite");
-const csv = require("csv-parser");
-const multer = require("multer");
-const fs = require("fs");
-const path = require("path");
+import express from "express";
+import bodyParser from "body-parser";
+import cors from "cors";
+import { GoogleGenAI } from "@google/genai";
+import sqlite3 from "sqlite3";
+import { open } from "sqlite";
+import csv from "csv-parser";
+import multer from "multer";
+import fs from "fs";
+import path from "path";
 
 const app = express();
 const PORT = process.env.PORT || 10000;
