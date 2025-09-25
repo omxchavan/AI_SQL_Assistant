@@ -12,7 +12,7 @@ const fs = require("fs");
 const path = require("path");
 
 const app = express();
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 3000;
 app.set("view engine", "ejs");
 app.set("views", "./views");
 
@@ -688,4 +688,5 @@ app.get("/health", (req, res) => {
 // Start the server
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Backend server running on port ${PORT}`);
+  console.log(`Server is running on(url): http://localhost:${PORT}`);
 });
