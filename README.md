@@ -19,12 +19,12 @@ A web application that generates SQL queries from natural language using the Goo
 2. Install dependencies: `npm install`
 3. Create a `.env` file with your GEMINI_API_KEY
 4. Run the server: `npm run dev`
-5. Open http://localhost:3000 in your browser
+5. Open http://localhost:10000 in your browser
 
 ## Environment Variables
 
 - `GEMINI_API_KEY`: Your Google Gemini API key
-- `PORT`: Port to run the server on (defaults to 3000)
+- `PORT`: Port to run the server on (defaults to 10000)
 
 ## API Endpoints
 
