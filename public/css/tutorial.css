@@ -74,14 +74,13 @@
     display: flex;
   }
 }
+
 body {
-  font-family: "Inter", sans-serif;
-  line-height: 1.7;
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 30px 20px;
-  background: var(--bg-color);
+  margin: 0;
+  font-family: "SF Pro Display", "Segoe UI", Arial, sans-serif;
+  background-color: var(--bg-color);
   color: var(--text-color);
+  line-height: 1.6;
 }
 
 header h1 {

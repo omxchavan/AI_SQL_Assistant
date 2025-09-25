@@ -96,14 +96,12 @@
         box-shadow: 0 0 10px var(--danger-color);
       }
 
-      body {
+         body {
+        margin: 0;
         font-family: "SF Pro Display", "Segoe UI", Arial, sans-serif;
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 20px;
-        line-height: 1.6;
         background-color: var(--bg-color);
         color: var(--text-color);
+        line-height: 1.6;
       }
 
       h1,
