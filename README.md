@@ -24,7 +24,7 @@ A web application that generates SQL queries from natural language using the Goo
 ## Environment Variables
 
 - `GEMINI_API_KEY`: Your Google Gemini API key
-- `PORT`: Port to run the server on (defaults to 3000)
+- `PORT`: Port to run the server on (defaults to 10000)
 
 ## API Endpoints
 
