@@ -198,7 +198,7 @@ function createTable(data) {
   const exportBtn = document.createElement("button");
   exportBtn.textContent = "Export to CSV";
   exportBtn.style.marginTop = "10px";
-  exportBtn.style.marginBottom = "10px";
+  exportBtn.style.marginBottom = "15px";
   exportBtn.addEventListener("click", () => {
     exportTableToCSV(data.results, "query_results.csv");
   });
