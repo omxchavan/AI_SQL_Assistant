@@ -12,7 +12,6 @@ A web application that generates SQL queries from natural language using the Goo
 - View formatted results in a table
 - Sample database with tables for a library management system
 
-
 ## Local Development
 
 1. Clone the repository
