@@ -508,21 +508,86 @@ function parseCSVLine(line) {
   return values;
 }
 
-// File upload handling
-function handleFileUpload(file, isNlTab = false) {
-  const errorElement = isNlTab ? nlFileError : fileError;
+// Updated function to sync file info across both tabs
+function updateAllFileInfo(file, rowCount, headers, rows) {
+  const fileSize = Math.round(file.size / 1024);
 
-  // Reset error message
-  errorElement.style.display = "none";
-  errorElement.textContent = "";
+  // Update Direct SQL tab file info
+  filenameSpan.textContent = file.name;
+  filesizeSpan.textContent = `${fileSize} KB`;
+  columnCountSpan.textContent = headers.length;
+  rowCountSpan.textContent = rowCount;
+
+  // Update column preview for Direct SQL tab
+  columnPreviewBody.innerHTML = "";
+  headers.forEach((header, index) => {
+    const tr = document.createElement("tr");
+    const tdName = document.createElement("td");
+    const tdSample = document.createElement("td");
+
+    tdName.textContent = header;
+    tdSample.textContent =
+      rows[0] && rows[0][header]
+        ? rows[0][header].length > 50
+          ? rows[0][header].substring(0, 50) + "..."
+          : rows[0][header]
+        : "N/A";
+
+    tr.appendChild(tdName);
+    tr.appendChild(tdSample);
+    columnPreviewBody.appendChild(tr);
+  });
+
+  fileInfo.classList.add("visible");
+  fileUploadArea.classList.add("active");
+
+  // Update NL tab file info
+  nlFilenameSpan.textContent = file.name;
+  nlFilesizeSpan.textContent = `${fileSize} KB`;
+  nlColumnCountSpan.textContent = headers.length;
+  nlRowCountSpan.textContent = rowCount;
+
+  // Update column preview for NL tab
+  nlColumnPreviewBody.innerHTML = "";
+  headers.forEach((header, index) => {
+    const tr = document.createElement("tr");
+    const tdName = document.createElement("td");
+    const tdSample = document.createElement("td");
+
+    tdName.textContent = header;
+    tdSample.textContent =
+      rows[0] && rows[0][header]
+        ? rows[0][header].length > 50
+          ? rows[0][header].substring(0, 50) + "..."
+          : rows[0][header]
+        : "N/A";
+
+    tr.appendChild(tdName);
+    tr.appendChild(tdSample);
+    nlColumnPreviewBody.appendChild(tr);
+  });
+
+  nlFileInfo.classList.add("visible");
+  nlFileUploadArea.classList.add("active");
+}
+
+// Unified file upload handling
+function handleFileUpload(file) {
+  // Reset error messages for both tabs
+  fileError.style.display = "none";
+  fileError.textContent = "";
+  nlFileError.style.display = "none";
+  nlFileError.textContent = "";
 
   if (!file) {
-    showError(errorElement, "Please select a file");
+    showError(fileError, "Please select a file");
+    showError(nlFileError, "Please select a file");
     return;
   }
 
   if (!file.name.toLowerCase().endsWith(".csv")) {
-    showError(errorElement, "Please upload a CSV file");
+    showError(fileError, "Please upload a CSV file");
+    showError(nlFileError, "Please upload a CSV file");
     return;
   }
 
@@ -542,21 +607,17 @@ function handleFileUpload(file, isNlTab = false) {
       // Set CSV table name (remove .csv extension and replace spaces/special chars with underscores)
       csvTableName = file.name.replace(/\.csv$/i, '').replace(/[^a-zA-Z0-9_]/g, '_');
 
-      // Update UI
-      updateFileInfo(
-        file,
-        parsedData.rows.length,
-        parsedData.headers,
-        parsedData.rows,
-        isNlTab
-      );
+      // Update UI for both tabs
+      updateAllFileInfo(file, parsedData.rows.length, parsedData.headers, parsedData.rows);
     } catch (error) {
-      showError(errorElement, `Error parsing CSV: ${error.message}`);
+      showError(fileError, `Error parsing CSV: ${error.message}`);
+      showError(nlFileError, `Error parsing CSV: ${error.message}`);
     }
   };
 
   reader.onerror = function () {
-    showError(errorElement, "Error reading file");
+    showError(fileError, "Error reading file");
+    showError(nlFileError, "Error reading file");
   };
 
   reader.readAsText(file);
@@ -567,69 +628,7 @@ function showError(element, message) {
   element.style.display = "block";
 }
 
-function updateFileInfo(file, rowCount, headers, rows, isNlTab = false) {
-  const fileSize = Math.round(file.size / 1024);
-
-  if (isNlTab) {
-    nlFilenameSpan.textContent = file.name;
-    nlFilesizeSpan.textContent = `${fileSize} KB`;
-    nlColumnCountSpan.textContent = headers.length;
-    nlRowCountSpan.textContent = rowCount;
-
-    // Update column preview
-    nlColumnPreviewBody.innerHTML = "";
-    headers.forEach((header, index) => {
-      const tr = document.createElement("tr");
-      const tdName = document.createElement("td");
-      const tdSample = document.createElement("td");
-
-      tdName.textContent = header;
-      tdSample.textContent =
-        rows[0] && rows[0][header]
-          ? rows[0][header].length > 50
-            ? rows[0][header].substring(0, 50) + "..."
-            : rows[0][header]
-          : "N/A";
-
-      tr.appendChild(tdName);
-      tr.appendChild(tdSample);
-      nlColumnPreviewBody.appendChild(tr);
-    });
-
-    nlFileInfo.classList.add("visible");
-    nlFileUploadArea.classList.add("active");
-  } else {
-    filenameSpan.textContent = file.name;
-    filesizeSpan.textContent = `${fileSize} KB`;
-    columnCountSpan.textContent = headers.length;
-    rowCountSpan.textContent = rowCount;
-
-    // Update column preview
-    columnPreviewBody.innerHTML = "";
-    headers.forEach((header, index) => {
-      const tr = document.createElement("tr");
-      const tdName = document.createElement("td");
-      const tdSample = document.createElement("td");
-
-      tdName.textContent = header;
-      tdSample.textContent =
-        rows[0] && rows[0][header]
-          ? rows[0][header].length > 50
-            ? rows[0][header].substring(0, 50) + "..."
-            : rows[0][header]
-          : "N/A";
-
-      tr.appendChild(tdName);
-      tr.appendChild(tdSample);
-      columnPreviewBody.appendChild(tr);
-    });
-
-    fileInfo.classList.add("visible");
-    fileUploadArea.classList.add("active");
-  }
-}
-
-// Set up file upload events
+// Set up file upload events for Direct SQL tab
 fileUploadArea.addEventListener("click", () => {
   csvFileInput.click();
 });
@@ -650,15 +649,15 @@ fileUploadArea.addEventListener("dragleave", () => {
 fileUploadArea.addEventListener("drop", (e) => {
   e.preventDefault();
   const file = e.dataTransfer.files[0];
-  handleFileUpload(file, false);
+  handleFileUpload(file);
 });
 
 csvFileInput.addEventListener("change", (e) => {
   const file = e.target.files[0];
-  handleFileUpload(file, false);
+  handleFileUpload(file);
 });
 
-// Set up NL file upload events
+// Set up file upload events for NL tab
 nlFileUploadArea.addEventListener("click", () => {
   nlCsvFileInput.click();
 });
@@ -679,12 +678,28 @@ nlFileUploadArea.addEventListener("dragleave", () => {
 nlFileUploadArea.addEventListener("drop", (e) => {
   e.preventDefault();
   const file = e.dataTransfer.files[0];
-  handleFileUpload(file, true);
+  handleFileUpload(file);
 });
 
 nlCsvFileInput.addEventListener("change", (e) => {
   const file = e.target.files[0];
-  handleFileUpload(file, true);
+  handleFileUpload(file);
+});
+
+// Global paste event handler
+document.addEventListener("paste", (e) => {
+  // Prevent default paste into text fields if needed
+  e.preventDefault();
+
+  const items = e.clipboardData.items;
+  for (const item of items) {
+    if (item.kind === "file") {
+      const file = item.getAsFile();
+      if (file) {
+        handleFileUpload(file);
+      }
+    }
+  }
 });
 
 // Initialize CodeMirror editors on page load
