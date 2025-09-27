@@ -3,7 +3,7 @@ require("dotenv").config(); // Load environment variables
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-// Using the new GenAI SDK, GenerativeAI has been deprecated 
+// Using the new GenAI SDK, GenerativeAI has been deprecated
 const { GoogleGenAI } = require("@google/genai");
 const sqlite3 = require("sqlite3");
 const { open } = require("sqlite");
@@ -24,7 +24,7 @@ app.use(express.static("public"));
 // Use API key from environment variable
 const API_KEY = process.env.GEMINI_API_KEY;
 // Authenticate API key and setup the client
-const genAI = new GoogleGenAI({apiKey: API_KEY});
+const genAI = new GoogleGenAI({ apiKey: API_KEY });
 
 // Initialize SQLite database
 let db;
@@ -168,10 +168,10 @@ async function generateSQLQuery(prompt) {
     // Get the generated response
     const response = await genAI.models.generateContent({
       model: "gemini-2.5-flash",
-      contents: fullPrompt
-    })
+      contents: fullPrompt,
+    });
 
-    // Return the response 
+    // Return the response
     return response.text;
   } catch (error) {
     console.error("Error generating SQL query:", error);
@@ -264,26 +264,28 @@ function formatResultsAsTable(results) {
 
 // Helper function to parse CSV data
 function parseCSV(csvText) {
-  const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== '');
+  const lines = csvText.split(/\r?\n/).filter((line) => line.trim() !== "");
   if (lines.length < 2) {
-    throw new Error("CSV file must have at least a header row and one data row");
+    throw new Error(
+      "CSV file must have at least a header row and one data row"
+    );
   }
 
   // Parse headers
   const headers = parseCSVLine(lines[0]);
-  
+
   // Parse data rows
   const rows = [];
   for (let i = 1; i < lines.length; i++) {
-    if (lines[i].trim() === '') continue;
-    
+    if (lines[i].trim() === "") continue;
+
     const values = parseCSVLine(lines[i]);
     const row = {};
-    
+
     headers.forEach((header, index) => {
-      row[header] = values[index] || '';
+      row[header] = values[index] || "";
     });
-    
+
     rows.push(row);
   }
 
@@ -293,40 +295,40 @@ function parseCSV(csvText) {
 // Helper function to parse a single CSV line
 function parseCSVLine(line) {
   const values = [];
-  let current = '';
+  let current = "";
   let inQuotes = false;
-  
+
   for (let i = 0; i < line.length; i++) {
     const char = line[i];
-    
+
     if (char === '"') {
       inQuotes = !inQuotes;
-    } else if (char === ',' && !inQuotes) {
+    } else if (char === "," && !inQuotes) {
       values.push(current.trim());
-      current = '';
+      current = "";
     } else {
       current += char;
     }
   }
-  
+
   values.push(current.trim());
   return values;
 }
 
 // Configure multer for file uploads
 const storage = multer.memoryStorage();
-const upload = multer({ 
+const upload = multer({
   storage: storage,
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
   },
   fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'text/csv' || file.originalname.endsWith('.csv')) {
+    if (file.mimetype === "text/csv" || file.originalname.endsWith(".csv")) {
       cb(null, true);
     } else {
-      cb(new Error('Only CSV files are allowed'));
+      cb(new Error("Only CSV files are allowed"));
     }
-  }
+  },
 });
 
 // Routes
@@ -497,6 +499,7 @@ app.post("/api/execute-sql", async (req, res) => {
 });
 
 // Route to generate SQL for CSV data
+// Route to generate SQL for CSV data
 app.post("/api/generate-csv-sql", async (req, res) => {
   try {
     const { prompt, csvData, filename } = req.body;
@@ -508,9 +511,6 @@ app.post("/api/generate-csv-sql", async (req, res) => {
     if (!csvData || !csvData.headers) {
       return res.status(400).json({ error: "Missing or invalid CSV data" });
     }
-
-    // Get the generative model (Gemini)
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     // Create a prompt for SQL query generation with CSV context
     const fullPrompt = `
@@ -524,10 +524,13 @@ app.post("/api/generate-csv-sql", async (req, res) => {
       Request: ${prompt}
     `;
 
-    // Generate content
-    const result = await model.generateContent(fullPrompt);
-    const response = await result.response;
-    let sqlQuery = response.text();
+    // Use the same pattern as in the working route
+    const response = await genAI.models.generateContent({
+      model: "gemini-2.0-flash", // or use "gemini-2.5-flash" to match your other route
+      contents: fullPrompt,
+    });
+
+    let sqlQuery = response.text;
     sqlQuery = cleanSQLQuery(sqlQuery);
 
     return res.status(200).json({
@@ -542,7 +545,6 @@ app.post("/api/generate-csv-sql", async (req, res) => {
     });
   }
 });
-
 // Route to execute SQL queries on CSV data
 app.post("/api/execute-csv-sql", async (req, res) => {
   try {
@@ -567,17 +569,19 @@ app.post("/api/execute-csv-sql", async (req, res) => {
 
     try {
       // Create table based on CSV headers
-      const columns = csvData.headers.map(header => `"${header}" TEXT`).join(", ");
+      const columns = csvData.headers
+        .map((header) => `"${header}" TEXT`)
+        .join(", ");
       await tempDb.exec(`CREATE TABLE uploaded_csv (${columns})`);
 
       // Insert CSV data
-      const placeholders = csvData.headers.map(() => '?').join(', ');
+      const placeholders = csvData.headers.map(() => "?").join(", ");
       const insertStmt = await tempDb.prepare(
         `INSERT INTO uploaded_csv VALUES (${placeholders})`
       );
 
       for (const row of csvData.rows) {
-        const values = csvData.headers.map(header => row[header] || '');
+        const values = csvData.headers.map((header) => row[header] || "");
         await insertStmt.run(values);
       }
 
@@ -611,7 +615,7 @@ app.post("/api/execute-csv-sql", async (req, res) => {
 });
 
 // Route to handle CSV file upload
-app.post("/api/upload-csv", upload.single('csvFile'), (req, res) => {
+app.post("/api/upload-csv", upload.single("csvFile"), (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
@@ -624,7 +628,7 @@ app.post("/api/upload-csv", upload.single('csvFile'), (req, res) => {
       success: true,
       filename: req.file.originalname,
       data: parsedData,
-      message: "CSV file parsed successfully"
+      message: "CSV file parsed successfully",
     });
   } catch (error) {
     console.error("Error processing CSV file:", error);

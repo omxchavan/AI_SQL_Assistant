@@ -85,7 +85,7 @@
       header {
         padding: 20px;
         text-align: center;
-        background: var(--card-bg);
+        background: var(--bg-color);
         border-bottom: 1px solid #222;
       }
 
@@ -175,3 +175,8 @@
         color: var(--muted-text);
         border-top: 1px solid #222;
       }
+
+      .container {
+  padding: 10px;
+  margin: 10px;
+}
