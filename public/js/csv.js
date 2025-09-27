@@ -186,6 +186,7 @@ nlTab.addEventListener("click", () => {
 
 // Helper function to create an HTML table from JSON data
 function createTable(data) {
+  const container = document.createElement("div");
   if (!data || !data.results || data.results.length === 0) {
     return "<p>No results returned.</p>";
   }
@@ -222,7 +223,50 @@ function createTable(data) {
   });
 
   tableElement.appendChild(tbody);
-  return tableElement;
+  container.appendChild(tableElement);
+
+  // Create Export to CSV button
+  const exportBtn = document.createElement("button");
+  exportBtn.textContent = "Export to CSV";
+  exportBtn.style.marginTop = "10px";
+  exportBtn.style.marginBottom = "25px";
+  exportBtn.addEventListener("click", () => {
+    exportTableToCSV(data.results, "query_results.csv");
+  });
+
+  container.appendChild(exportBtn);
+  return container;
+}
+
+//Export to CSV function
+function exportTableToCSV(jsonData, filename) {
+  if (!jsonData || jsonData.length === 0) return;
+
+  const columnNames = Object.keys(jsonData[0]);
+  const csvRows = [];
+
+  // Header
+  csvRows.push(columnNames.join(","));
+
+  // Rows
+  jsonData.forEach((row) => {
+    const values = columnNames.map((col) =>
+      row[col] !== null ? `"${row[col]}"` : "NULL"
+    );
+    csvRows.push(values.join(","));
+  });
+
+  const csvString = csvRows.join("\n");
+  const blob = new Blob([csvString], { type: "text/csv" });
+  const url = window.URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.setAttribute("hidden", "");
+  a.setAttribute("href", url);
+  a.setAttribute("download", filename);
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
 // Execute SQL query on CSV data
