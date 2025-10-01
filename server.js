@@ -157,11 +157,11 @@ async function generateSQLQuery(prompt) {
   try {
     // Create a prompt for SQL query generation
     const fullPrompt = `
-      You are a SQLITE expert. Convert the following natural language request into a valid SQLITE query.
-      Only return the SQLITE query without any additional explanation or markdown.
+      You are a SQLITE3 expert. Convert the following natural language request into a valid SQLITE3 query.
+      Only return the SQLITE3 query without any additional explanation or markdown.
 
-      Do not include backticks, SQLITE comments, or markdown formatting
-      
+      Do not include backticks, SQLITE3 comments, or markdown formatting
+      REMEMBER the db on which quries are executed is SQLITE3 on browser so give SQLITE3 friendly queries.
       Request: ${prompt}
     `;
 
@@ -520,6 +520,9 @@ app.post("/api/generate-csv-sql", async (req, res) => {
       
       Only return the SQLITE query without any additional explanation or markdown.
       Do not include backticks, SQLITE comments, or markdown formatting.
+      REMEMBER the db on which quries are executed is SQLITE3 on browser so give SQLITE3 friendly queries.
+
+      
       
       Request: ${prompt}
     `;

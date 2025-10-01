@@ -37,7 +37,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/sql.min.js"></script>
     <link rel="stylesheet" href="/css/csv.css" />
-    <link rel="stylesheet" href="/css/syntax.css">
+    <link rel="stylesheet" href="/css/syntax.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=SUSE+Mono:ital,wght@0,100..800;1,100..800&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <nav class="navbar">
@@ -50,162 +56,167 @@
       </ul>
     </nav>
     <div class="container">
-    <h1>CSV Query Tester</h1>
+      <h1>CSV Query Tester</h1>
 
-    <div class="tabs">
-      <div class="tab active" id="direct-tab">Direct SQL</div>
-      <div class="tab" id="nl-tab">Natural Language</div>
-    </div>
-
-    <div class="container" id="direct-container">
-      <h2>Upload CSV File</h2>
-      <div class="file-upload-area" id="file-upload-area">
-        <p>Drag & drop your CSV file here or click to browse</p>
-        <input type="file" id="csv-file" accept=".csv" style="display: none" />
-        <div class="error-message" id="file-error"></div>
+      <div class="tabs">
+        <div class="tab active" id="direct-tab">Direct SQL</div>
+        <div class="tab" id="nl-tab">Natural Language</div>
       </div>
 
-      <div class="file-info" id="file-info">
-        <h3>File Information</h3>
-        <div id="file-details">
-          <p><strong>Filename:</strong> <span id="filename"></span></p>
-          <p><strong>Size:</strong> <span id="filesize"></span></p>
-          <p><strong>Columns:</strong> <span id="column-count"></span></p>
-          <p><strong>Rows:</strong> <span id="row-count"></span></p>
+      <div class="container" id="direct-container">
+        <h2>Upload CSV File</h2>
+        <div class="file-upload-area" id="file-upload-area">
+          <p>Drag & drop your CSV file here or click to browse</p>
+          <input
+            type="file"
+            id="csv-file"
+            accept=".csv"
+            style="display: none"
+          />
+          <div class="error-message" id="file-error"></div>
         </div>
-        <div id="column-preview">
-          <h4>Column Preview</h4>
-          <table>
-            <thead>
-              <tr>
-                <th>Column Name</th>
-                <th>Sample Data</th>
-              </tr>
-            </thead>
-            <tbody id="column-preview-body"></tbody>
-          </table>
+
+        <div class="file-info" id="file-info">
+          <h3>File Information</h3>
+          <div id="file-details">
+            <p><strong>Filename:</strong> <span id="filename"></span></p>
+            <p><strong>Size:</strong> <span id="filesize"></span></p>
+            <p><strong>Columns:</strong> <span id="column-count"></span></p>
+            <p><strong>Rows:</strong> <span id="row-count"></span></p>
+          </div>
+          <div id="column-preview">
+            <h4>Column Preview</h4>
+            <table>
+              <thead>
+                <tr>
+                  <th>Column Name</th>
+                  <th>Sample Data</th>
+                </tr>
+              </thead>
+              <tbody id="column-preview-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <h2>Enter SQL Query</h2>
+        <textarea
+          id="sql-query"
+          placeholder="SELECT * FROM uploaded_csv;"
+        ></textarea>
+        <div class="action-buttons">
+          <button id="execute-btn">Execute Query</button>
+          <button id="clear-sql-btn" class="secondary-btn">Clear</button>
+        </div>
+
+        <h2>Response</h2>
+        <div class="status-message" id="sql-status"></div>
+        <div class="response-container">
+          <div id="sql-response-table"></div>
+        </div>
+        <div
+          class="query-editor"
+          id="sql-response-editor"
+          contenteditable="true"
+          spellcheck="false"
+        ></div>
+      </div>
+
+      <div class="container" id="nl-container" style="display: none">
+        <h2>Upload CSV File</h2>
+        <div class="file-upload-area" id="nl-file-upload-area">
+          <p>Drag & drop your CSV file here or click to browse</p>
+          <input
+            type="file"
+            id="nl-csv-file"
+            accept=".csv"
+            style="display: none"
+          />
+          <div class="error-message" id="nl-file-error"></div>
+        </div>
+
+        <div class="file-info" id="nl-file-info">
+          <h3>File Information</h3>
+          <div id="nl-file-details">
+            <p><strong>Filename:</strong> <span id="nl-filename"></span></p>
+            <p><strong>Size:</strong> <span id="nl-filesize"></span></p>
+            <p><strong>Columns:</strong> <span id="nl-column-count"></span></p>
+            <p><strong>Rows:</strong> <span id="nl-row-count"></span></p>
+          </div>
+          <div id="nl-column-preview">
+            <h4>Column Preview</h4>
+            <table>
+              <thead>
+                <tr>
+                  <th>Column Name</th>
+                  <th>Sample Data</th>
+                </tr>
+              </thead>
+              <tbody id="nl-column-preview-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <h2>Enter Natural Language Query</h2>
+        <textarea
+          id="nl-query"
+          placeholder="Show the top 5 rows from the CSV file"
+        ></textarea>
+        <div class="action-buttons">
+          <button id="generate-btn">Generate SQL</button>
+          <button id="clear-nl-btn" class="secondary-btn">Clear</button>
+        </div>
+
+        <h2>Generated SQL</h2>
+        <div
+          class="query-editor"
+          id="generated-sql"
+          contenteditable="true"
+          spellcheck="false"
+        ></div>
+        <div class="action-buttons">
+          <button id="execute-generated-btn" style="display: none">
+            Execute Generated SQL
+          </button>
+          <button
+            id="copy-generated-sql"
+            style="display: none"
+            class="secondary-btn"
+          >
+            Copy SQL
+          </button>
+        </div>
+
+        <h2>Response</h2>
+        <div class="status-message" id="nl-status"></div>
+        <div class="response-container">
+          <div id="nl-response-table"></div>
         </div>
       </div>
 
-      <h2>Enter SQL Query</h2>
-      <textarea
-        id="sql-query"
-        placeholder="SELECT * FROM uploaded_csv;"
-      ></textarea>
-      <div class="action-buttons">
-        <button id="execute-btn">Execute Query</button>
-        <button id="clear-sql-btn" class="secondary-btn">Clear</button>
-      </div>
-
-      <h2>Response</h2>
-      <div class="status-message" id="sql-status"></div>
-      <div class="response-container">
-        <div id="sql-response-table"></div>
-      </div>
-      <div
-        class="query-editor"
-        id="sql-response-editor"
-        contenteditable="true"
-        spellcheck="false"
-      ></div>
-    </div>
-
-    <div class="container" id="nl-container" style="display: none">
-      <h2>Upload CSV File</h2>
-      <div class="file-upload-area" id="nl-file-upload-area">
-        <p>Drag & drop your CSV file here or click to browse</p>
-        <input
-          type="file"
-          id="nl-csv-file"
-          accept=".csv"
-          style="display: none"
-        />
-        <div class="error-message" id="nl-file-error"></div>
-      </div>
-
-      <div class="file-info" id="nl-file-info">
-        <h3>File Information</h3>
-        <div id="nl-file-details">
-          <p><strong>Filename:</strong> <span id="nl-filename"></span></p>
-          <p><strong>Size:</strong> <span id="nl-filesize"></span></p>
-          <p><strong>Columns:</strong> <span id="nl-column-count"></span></p>
-          <p><strong>Rows:</strong> <span id="nl-row-count"></span></p>
+      <div class="query-examples">
+        <h3>Example Queries</h3>
+        <div class="example" data-query="SELECT * FROM uploaded_csv LIMIT 10;">
+          Show first 10 rows
         </div>
-        <div id="nl-column-preview">
-          <h4>Column Preview</h4>
-          <table>
-            <thead>
-              <tr>
-                <th>Column Name</th>
-                <th>Sample Data</th>
-              </tr>
-            </thead>
-            <tbody id="nl-column-preview-body"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <h2>Enter Natural Language Query</h2>
-      <textarea
-        id="nl-query"
-        placeholder="Show the top 5 rows from the CSV file"
-      ></textarea>
-      <div class="action-buttons">
-        <button id="generate-btn">Generate SQL</button>
-        <button id="clear-nl-btn" class="secondary-btn">Clear</button>
-      </div>
-
-      <h2>Generated SQL</h2>
-      <div
-        class="query-editor"
-        id="generated-sql"
-        contenteditable="true"
-        spellcheck="false"
-      ></div>
-      <div class="action-buttons">
-        <button id="execute-generated-btn" style="display: none">
-          Execute Generated SQL
-        </button>
-        <button
-          id="copy-generated-sql"
-          style="display: none"
-          class="secondary-btn"
+        <div
+          class="example"
+          data-query="SELECT COUNT(*) as total_rows FROM uploaded_csv;"
         >
-          Copy SQL
-        </button>
+          Count total rows
+        </div>
+        <div
+          class="example"
+          data-query="SELECT column1, column2 FROM uploaded_csv WHERE column3 > 100;"
+        >
+          Filter data based on condition
+        </div>
+        <div
+          class="example"
+          data-query="SELECT column1, AVG(column2) as average FROM uploaded_csv GROUP BY column1;"
+        >
+          Group and aggregate data
+        </div>
       </div>
-
-      <h2>Response</h2>
-      <div class="status-message" id="nl-status"></div>
-      <div class="response-container">
-        <div id="nl-response-table"></div>
-      </div>
-    </div>
-
-    <div class="query-examples">
-      <h3>Example Queries</h3>
-      <div class="example" data-query="SELECT * FROM uploaded_csv LIMIT 10;">
-        Show first 10 rows
-      </div>
-      <div
-        class="example"
-        data-query="SELECT COUNT(*) as total_rows FROM uploaded_csv;"
-      >
-        Count total rows
-      </div>
-      <div
-        class="example"
-        data-query="SELECT column1, column2 FROM uploaded_csv WHERE column3 > 100;"
-      >
-        Filter data based on condition
-      </div>
-      <div
-        class="example"
-        data-query="SELECT column1, AVG(column2) as average FROM uploaded_csv GROUP BY column1;"
-      >
-        Group and aggregate data
-      </div>
-    </div>
     </div>
     <footer>&copy; 2025 SQL Query Tester. Built with ❤️ for developers.</footer>
   </body>
